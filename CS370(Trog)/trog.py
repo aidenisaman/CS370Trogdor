@@ -298,6 +298,11 @@ def draw_burnination_bar(screen, trogdor, burnination_duration):
     fill_width = bar_width * (trogdor.burnination_timer / burnination_duration)
     pygame.draw.rect(screen, RED, (WIDTH - bar_width - 10, 10, bar_width, bar_height), 2)
     pygame.draw.rect(screen, ORANGE, (WIDTH - bar_width - 10, 10, fill_width, bar_height))
+
+def pause_game():
+    #pause game function trigged on pressing escape
+    NotImplemented
+
 def game_loop():
     # Declare global variables to be used within the function
     global houses_crushed, lives, burnination_threshold, burnination_duration
@@ -331,8 +336,7 @@ def game_loop():
         #Pause if escape is pressed
         if keys[pygame.K_ESCAPE]:
             print("Pause")
-            pygame.QUIT
-            nothing = input()
+            pause_game()
         
         # Move Trogdor based on arrow key inputs and "wasd" inputs
         trogdor.move(keys[pygame.K_RIGHT] - keys[pygame.K_LEFT] + keys[pygame.K_d] - keys[pygame.K_a],

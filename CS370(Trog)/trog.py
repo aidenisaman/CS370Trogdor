@@ -327,9 +327,16 @@ def game_loop():
         
         # Get the state of all keyboard keys
         keys = pygame.key.get_pressed()
+
+        #Pause if escape is pressed
+        if keys[pygame.K_ESCAPE]:
+            print("Pause")
+            pygame.QUIT
+            nothing = input()
         
-        # Move Trogdor based on arrow key inputs
-        trogdor.move(keys[pygame.K_RIGHT] - keys[pygame.K_LEFT], keys[pygame.K_DOWN] - keys[pygame.K_UP])
+        # Move Trogdor based on arrow key inputs and "wasd" inputs
+        trogdor.move(keys[pygame.K_RIGHT] - keys[pygame.K_LEFT] + keys[pygame.K_d] - keys[pygame.K_a],
+                     keys[pygame.K_DOWN] - keys[pygame.K_UP] + keys[pygame.K_s] - keys[pygame.K_w])
         
         # Move all peasants
         for peasant in peasants:

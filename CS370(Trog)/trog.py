@@ -301,7 +301,19 @@ def draw_burnination_bar(screen, trogdor, burnination_duration):
 
 def pause_game():
     #pause game function trigged on pressing escape
-    NotImplemented
+    #Displays that game is paused and how to continue
+    font = pygame.font.Font(None, MENU_FONT_SIZE)
+    text = font.render("Game is paused, press any key to resume:", True, RED)
+    screen.blit(text, (WIDTH/2 - text.get_width()/2, HEIGHT/3))
+    pygame.display.flip()
+
+    #Loop waiting until a key is pressed then resumes
+    while True:
+        pygame.event.clear()
+        pygame.event.wait()
+        if pygame.event.get():
+            return
+
 
 def game_loop():
     # Declare global variables to be used within the function

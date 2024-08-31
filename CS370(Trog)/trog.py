@@ -300,19 +300,56 @@ def draw_burnination_bar(screen, trogdor, burnination_duration):
     pygame.draw.rect(screen, ORANGE, (WIDTH - bar_width - 10, 10, fill_width, bar_height))
 
 def pause_game():
-    #pause game function trigged on pressing escape
+    #pause game function triggered on pressing escape
     #Displays that game is paused and how to continue
-    font = pygame.font.Font(None, MENU_FONT_SIZE)
-    text = font.render("Game is paused, press any key to resume:", True, RED)
-    screen.blit(text, (WIDTH/2 - text.get_width()/2, HEIGHT/3))
+
+    # Create a font object for the title with double the menu font size
+    font = pygame.font.Font(None, MENU_FONT_SIZE * 2)
+
+    # Render the title text onto a surface
+    title = font.render("Trogdor the Burninator", True, ORANGE)
+
+    # Blit the title surface onto the screen, centered horizontally and at 1/4th height
+    screen.blit(title, (WIDTH / 2 - title.get_width() / 2, HEIGHT / 4))
+
+    # Define the buttons with their text and colors
+    buttons = [
+        ("Resume", GREEN),
+        ("Exit", BLUE)
+    ]
+
+    # Set the initial y-coordinate for the first button
+    button_y = HEIGHT / 2
+
+    # Draw each button on the screen
+    for text, color in buttons:
+        draw_button(screen, text, WIDTH / 2 - BUTTON_WIDTH / 2, button_y, BUTTON_WIDTH, BUTTON_HEIGHT, color, WHITE)
+        # Move the y-coordinate down for the next button
+        button_y += BUTTON_HEIGHT + BUTTON_PADDING
+
+    # Update the display to show the buttons and title
     pygame.display.flip()
 
-    #Loop waiting until a key is pressed then resumes
+    # Event loop to handle user interactions
     while True:
-        pygame.event.clear()
-        pygame.event.wait()
-        if pygame.event.get():
-            return
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # If the quit event is triggered, return "exit"
+                return "exit"
+            if event.type == pygame.MOUSEBUTTONDOWN:  # If the mouse button is pressed
+                mouse_pos = pygame.mouse.get_pos()  # Get the position of the mouse click
+                button_y = HEIGHT / 2  # Reset the y-coordinate for button checking
+                for text, _ in buttons:
+                    # Create a rectangle for the current button
+                    button_rect = pygame.Rect(WIDTH / 2 - BUTTON_WIDTH / 2, button_y, BUTTON_WIDTH, BUTTON_HEIGHT)
+                    # Check if the mouse click is within the button rectangle
+                    if button_rect.collidepoint(mouse_pos):
+                        if text == "Resume":  # If the "Start" button is clicked, return "start"
+                            return "start"
+                        elif text == "Exit":  # If the "Exit" button is clicked, return "exit"
+                            return "exit"
+                    # Move the y-coordinate down for the next button
+                    button_y += BUTTON_HEIGHT + BUTTON_PADDING
+
 
 
 def game_loop():
@@ -347,13 +384,18 @@ def game_loop():
 
         #Pause if escape is pressed
         if keys[pygame.K_ESCAPE]:
-            print("Pause")
-            pause_game()
-        
-        # Move Trogdor based on arrow key inputs and "wasd" inputs
-        trogdor.move(keys[pygame.K_RIGHT] - keys[pygame.K_LEFT] + keys[pygame.K_d] - keys[pygame.K_a],
-                     keys[pygame.K_DOWN] - keys[pygame.K_UP] + keys[pygame.K_s] - keys[pygame.K_w])
-        
+            pizza = pause_game()
+            if pizza == "exit":
+                running = False
+
+        # Move Trogdor based on arrow key inputs "wasd" inputs
+        if keys[pygame.K_UP] | keys[pygame.K_DOWN] | keys[pygame.K_LEFT] | keys[pygame.K_RIGHT]:
+            trogdor.move(keys[pygame.K_RIGHT] - keys[pygame.K_LEFT],
+                         keys[pygame.K_DOWN] - keys[pygame.K_UP])
+        elif keys[pygame.K_w] | keys[pygame.K_s] | keys[pygame.K_a] | keys[pygame.K_d]:
+            trogdor.move(keys[pygame.K_d] - keys[pygame.K_a],
+                        keys[pygame.K_s] - keys[pygame.K_w])
+
         # Move all peasants
         for peasant in peasants:
             peasant.move()

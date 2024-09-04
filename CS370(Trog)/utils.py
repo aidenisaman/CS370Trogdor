@@ -1,3 +1,15 @@
+"""
+Contains game constants, settings, and utility functions for Trogdor the Burninator.
+
+Constants:
+- Color definitions (e.g., BLACK, RED, GREEN)
+- Game settings (e.g., WIDTH, HEIGHT, FPS)
+- Entity-specific constants (e.g., TROGDOR_SIZE, PEASANT_SPEED)
+
+Functions:
+- draw_burnination_bar(screen: pygame.Surface, trogdor: Trogdor, burnination_duration: int) -> None:
+  Utility function to draw the burnination bar on the screen.
+"""
 import pygame
 
 # Colors

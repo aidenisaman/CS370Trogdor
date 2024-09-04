@@ -1,3 +1,14 @@
+"""
+Defines the main game entities for Trogdor.
+
+Classes:
+- Trogdor: Player character with movement, burnination mode, and drawing methods.
+- Peasant: NPC that moves randomly and can be stomped by Trogdor.
+- Knight: Enemy that chases Trogdor periodically.
+- House: Stationary object that Trogdor can burn in burnination mode.
+- Projectile: Used by bosses, moves in a straight line.
+"""
+
 import pygame
 import random
 import math

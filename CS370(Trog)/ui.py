@@ -1,3 +1,14 @@
+"""
+Manages user interface elements for Trogdor the Burninator.
+
+Functions:
+- draw_button(screen: pygame.Surface, text: str, x: int, y: int, width: int, height: int, color: Tuple, text_color: Tuple) -> None:
+  Utility function to draw a button on the screen.
+- start_screen(screen: pygame.Surface) -> str: Displays and handles the main menu UI.
+- boss_selection_screen(screen: pygame.Surface) -> str: Displays and handles the boss practice mode selection UI.
+- show_congratulations_screen(screen: pygame.Surface) -> None: Displays the end game congratulations screen.
+"""
+
 import pygame
 from utils import WIDTH, HEIGHT, BLACK, WHITE, GREEN, RED, BLUE, ORANGE, YELLOW
 from utils import MENU_FONT_SIZE, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_PADDING

@@ -1,3 +1,11 @@
+""" Main entry point for the Trogdor game.
+
+Functions:
+- initialize_game(level: int) -> Tuple: Sets up game objects for a given level.
+- game_loop(screen: pygame.Surface) -> bool: Main game loop handling events, updates, and drawing.
+- boss_practice(screen: pygame.Surface, boss_type: str) -> None: Separate mode for practicing against specific bosses.
+- main() -> None: Entry point, manages game flow between menus and gameplay.
+ """
 import random
 import pygame
 import math

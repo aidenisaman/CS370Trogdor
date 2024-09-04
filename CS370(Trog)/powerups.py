@@ -1,3 +1,16 @@
+"""
+Defines power-ups and selection screen for Trogdor.
+
+Classes:
+- PowerUp: Base class for power-ups.
+- SpeedBoost: Increases Trogdor's speed.
+- ExtendedBurnination: Extends the duration of burnination mode.
+- ExtraLife: Gives Trogdor an additional life.
+
+Functions:
+- select_power_up(screen: pygame.Surface, trogdor: Trogdor, game_state: dict) -> dict:
+  Handles power-up selection UI and applies the chosen power-up.
+"""
 import random
 import pygame
 from utils import POWER_UP_DURATION_MULTIPLIER, POWER_UP_EXTRA_LIFE, POWER_UP_SPEED_BOOST, WIDTH, HEIGHT, BLACK, WHITE

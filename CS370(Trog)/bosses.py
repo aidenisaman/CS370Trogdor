@@ -1,3 +1,13 @@
+"""
+Defines boss characters for levels 5 and 10.
+
+Classes:
+- Merlin: Boss that teleports and shoots projectiles.
+- Lancelot: Boss that charges at Trogdor, vulnerable after hitting walls.
+- DragonKing: Final boss that flies around and breathes fire.
+
+Each boss class includes methods for updating, taking damage, and drawing.
+"""
 import pygame
 import random
 import math

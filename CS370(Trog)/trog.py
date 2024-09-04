@@ -2,6 +2,8 @@ import pygame
 import random
 import math
 
+# Test Comment to see if VS Code is Set up with git
+
 # Initialize Pygame
 pygame.init()
 

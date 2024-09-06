@@ -67,6 +67,35 @@ POWER_UP_DURATION_MULTIPLIER = 1.5
 POWER_UP_SPEED_BOOST = 2
 POWER_UP_EXTRA_LIFE = 1
 
+# Goblin Settings (should be moved before being pushed n pulled)
+GOB_SIZE = 12
+GOB_SPEED = 1.25
+GOB_LIFESPAN = 300
+
+#Gobin class
+class Goblin:
+    def __init__(self):
+        # set starting possittion ( taken from knigth code)
+        self.x = random.randint(0, WIDTH)
+        self.y = random.randint(0, HEIGHT)
+        self.size = GOB_SIZE
+        self.speed = GOB_SPEED
+        self.chasing = True
+    def draw(self):
+        color = GREEN #maybe make it change color when he blows up
+        pygame.draw.rect(screen, color, (self.x, self.y, self.size, self.size))
+    def chase(self, trogdor):
+        # Set Goblin's direction towards Trogdor
+        self.chasing = True
+        angle = math.atan2(trogdor.y - self.y, trogdor.x - self.x)
+        self.direction = angle
+
+    def move(self,trogdor):
+        # Set X and Y values for chase function
+        dx = math.cos(self.direction) * self.speed
+        dy = math.sin(self.direction) * self.speed
+        self.x = max(0, min(WIDTH - self.size, self.x + dx))
+        self.y = max(0, min(HEIGHT - self.size, self.y + dy))
 # Game objects
 class Trogdor:
     def __init__(self):
@@ -263,25 +292,6 @@ class Boss:
             self.mode_timer = BOSS_CHASE_DURATION
 
 # Power-Ups
-class PowerUp:
-    def apply(self, trogdor, game_state):
-        # Raise an error if apply method is not implemented in subclasses
-        raise NotImplementedError
-
-class SpeedBoost(PowerUp):
-    def apply(self, trogdor, game_state):
-        # Increase Trogdor's speed by the defined power-up speed boost
-        trogdor.speed += POWER_UP_SPEED_BOOST
-
-class ExtendedBurnination(PowerUp):
-    def apply(self, trogdor, game_state):
-        # Extend the burnination duration by multiplying with the defined multiplier
-        game_state['burnination_duration'] *= POWER_UP_DURATION_MULTIPLIER
-
-class ExtraLife(PowerUp):
-    def apply(self, trogdor, game_state):
-        # Increase the number of lives by the defined extra life amount
-        game_state['lives'] += POWER_UP_EXTRA_LIFE
 
 def initialize_game(level):
     # Initialize game entities based on the level
@@ -492,6 +502,27 @@ def game_loop():
     
     return False  # Exit the game loop
 
+#powerup
+class PowerUp:
+    def apply(self, trogdor, game_state):
+        # Raise an error if apply method is not implemented in subclasses
+        raise NotImplementedError
+
+class SpeedBoost(PowerUp):
+    def apply(self, trogdor, game_state):
+        # Increase Trogdor's speed by the defined power-up speed boost
+        trogdor.speed += POWER_UP_SPEED_BOOST
+
+class ExtendedBurnination(PowerUp):
+    def apply(self, trogdor, game_state):
+        # Extend the burnination duration by multiplying with the defined multiplier
+        game_state['burnination_duration'] *= POWER_UP_DURATION_MULTIPLIER
+
+class ExtraLife(PowerUp):
+    def apply(self, trogdor, game_state):
+        # Increase the number of lives by the defined extra life amount
+        game_state['lives'] += POWER_UP_EXTRA_LIFE
+#powerup selection
 def select_power_up(trogdor):
     # List of available power-ups
     power_ups = [SpeedBoost(), ExtendedBurnination(), ExtraLife()]

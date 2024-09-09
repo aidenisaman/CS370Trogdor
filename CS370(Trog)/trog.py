@@ -8,7 +8,7 @@ pygame.init()
 # Set up the display
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Trogdor the Burninator")
+pygame.display.set_caption("Trogdor 2: Return the Burninator")
 
 # Colors
 BLACK = (0, 0, 0)
@@ -848,11 +848,25 @@ def start_screen():
     # Fill the screen with black color
     screen.fill(BLACK)
     
-    # Create a font object for the title with double the menu font size
-    font = pygame.font.Font(None, MENU_FONT_SIZE * 2)
+    # Define the title text
+    title_text = "Trogdor 2: Return of the Burninator"
+    
+    # Calculate the maximum width for the title text
+    max_title_width = WIDTH * 0.8  # 80% of the screen width
+    
+    # Start with the initial font size
+    font_size = MENU_FONT_SIZE * 2
+    
+    # Create a font object
+    font = pygame.font.Font(None, font_size)
+    
+    # Adjust the font size until the title fits within the maximum width
+    while font.size(title_text)[0] > max_title_width:
+        font_size -= 1
+        font = pygame.font.Font(None, font_size)
     
     # Render the title text onto a surface
-    title = font.render("Trogdor the Burninator", True, ORANGE)
+    title = font.render(title_text, True, ORANGE)
     
     # Blit the title surface onto the screen, centered horizontally and at 1/4th height
     screen.blit(title, (WIDTH/2 - title.get_width()/2, HEIGHT/4))
@@ -897,6 +911,7 @@ def start_screen():
                             return "exit"
                     # Move the y-coordinate down for the next button
                     button_y += BUTTON_HEIGHT + BUTTON_PADDING
+
 #Boss Selection Menu
 def boss_selection_screen():
     screen.fill(BLACK)
@@ -1030,7 +1045,7 @@ def main():
     global screen
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Trogdor the Burninator")
+    pygame.display.set_caption("Trogdor 2: Return of the Burninator")
 
     while True:
         choice = start_screen()

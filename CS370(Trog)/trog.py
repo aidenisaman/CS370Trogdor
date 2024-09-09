@@ -51,14 +51,22 @@ BUTTON_HEIGHT = 60
 BUTTON_PADDING = 20
 
 # Boss Settings
-BOSS_SIZE = 40
-BOSS_SPEED = 1.5
-BOSS_CHASE_DURATION = 180  # 3 seconds at 60 FPS
-BOSS_RANGED_DURATION = 360  # 6 seconds at 60 FPS
-BOSS_HEALTH = 300
-BOSS_PROJECTILE_SPEED = 2
-BOSS_PROJECTILE_SIZE = 10
-BOSS_PROJECTILE_COOLDOWN = 45  # 0.75 seconds at 60 FPS
+# New constants for mini-bosses
+MERLIN_SIZE = 30
+MERLIN_PROJECTILE_SIZE = 10
+MERLIN_PROJECTILE_SPEED = 2
+MERLIN_PROJECTILE_COOLDOWN = 60  # 1 second at 60 FPS
+MERLIN_TELEPORT_DISTANCE = 200
+
+LANCELOT_SIZE = 35
+LANCELOT_CHARGE_SPEED = 10
+LANCELOT_AIM_DURATION = 120  # 3 seconds at 60 FPS
+LANCELOT_VULNERABLE_DURATION = 300  # 5 seconds at 60 FPS
+
+# Update or add these constants
+BOSS_HEALTH_BAR_WIDTH = 600
+BOSS_HEALTH_BAR_HEIGHT = 30
+BOSS_HEALTH_BAR_BORDER = 4
 
 # Power-up Settings
 POWER_UP_DURATION_MULTIPLIER = 1.5
@@ -172,93 +180,233 @@ class House:
         pygame.draw.rect(screen, GREEN, (self.x, self.y - health_bar_height - 2, health_bar_width, health_bar_height))
 
 class Projectile:
-    def __init__(self, x, y, angle):
-        # Initialize Projectile's position, speed, and direction
+    def __init__(self, x, y, angle, size):
         self.x = x
         self.y = y
-        self.speed = BOSS_PROJECTILE_SPEED
+        self.speed = MERLIN_PROJECTILE_SPEED
         self.angle = angle
-        self.size = BOSS_PROJECTILE_SIZE
+        self.size = size
 
     def move(self):
-        # Move Projectile in its set direction
         self.x += math.cos(self.angle) * self.speed
         self.y += math.sin(self.angle) * self.speed
 
     def draw(self, screen):
-        # Draw Projectile on the screen
         pygame.draw.circle(screen, YELLOW, (int(self.x), int(self.y)), self.size)
 
-class Boss:
+
+# Bosses
+class Merlin:
     def __init__(self):
-        # Initialize Boss's position, size, speed, health, mode, and timers
-        self.x = random.randint(0, WIDTH - BOSS_SIZE)
-        self.y = random.randint(0, HEIGHT - BOSS_SIZE)
-        self.size = BOSS_SIZE
-        self.speed = BOSS_SPEED
-        self.health = BOSS_HEALTH
-        self.mode = "chase"
-        self.mode_timer = BOSS_CHASE_DURATION
+        self.x = random.randint(0, WIDTH - MERLIN_SIZE)
+        self.y = random.randint(0, HEIGHT - MERLIN_SIZE)
+        self.size = MERLIN_SIZE
+        self.max_health = 3
+        self.health = self.max_health
         self.projectile_cooldown = 0
-        self.hits_taken = 0
-
-    def move(self, trogdor):
-        # Move Boss towards Trogdor if in chase mode
-        if self.mode == "chase":
-            angle = math.atan2(trogdor.y - self.y, trogdor.x - self.x)
-            self.x += math.cos(angle) * self.speed
-            self.y += math.sin(angle) * self.speed
-        
-        # Ensure Boss stays within screen boundaries
-        self.x = max(0, min(WIDTH - self.size, self.x))
-        self.y = max(0, min(HEIGHT - self.size, self.y))
-
-    def switch_mode(self):
-        # Switch Boss's mode between chase and ranged
-        if self.mode == "chase":
-            self.mode = "ranged"
-            self.mode_timer = BOSS_RANGED_DURATION
-        else:
-            self.mode = "chase"
-            self.mode_timer = BOSS_CHASE_DURATION
-
-    def draw(self, screen):
-        # Draw Boss on the screen with color based on mode
-        color = RED if self.mode == "chase" else BLUE
-        pygame.draw.rect(screen, color, (self.x, self.y, self.size, self.size))
-        
-        # Draw health bar above Boss
-        health_bar_width = self.size * (self.health / BOSS_HEALTH)
-        pygame.draw.rect(screen, GREEN, (self.x, self.y - 10, health_bar_width, 5))
+        self.projectile_size = MERLIN_PROJECTILE_SIZE
 
     def update(self, trogdor, projectiles):
-        # Update Boss's mode timer and switch mode if timer runs out
-        self.mode_timer -= 1
-        if self.mode_timer <= 0:
-            self.switch_mode()
-
-        # Move Boss or fire projectile based on current mode
-        if self.mode == "chase":
-            self.move(trogdor)
-        else:
-            self.projectile_cooldown -= 1
-            if self.projectile_cooldown <= 0:
-                self.fire_projectile(trogdor, projectiles)
-                self.projectile_cooldown = BOSS_PROJECTILE_COOLDOWN
+        self.projectile_cooldown -= 1
+        if self.projectile_cooldown <= 0:
+            self.fire_projectile(trogdor, projectiles)
+            self.projectile_cooldown = MERLIN_PROJECTILE_COOLDOWN
 
     def fire_projectile(self, trogdor, projectiles):
-        # Fire a projectile towards Trogdor
         angle = math.atan2(trogdor.y - self.y, trogdor.x - self.x)
-        projectiles.append(Projectile(self.x + self.size // 2, self.y + self.size // 2, angle))
+        projectiles.append(Projectile(self.x + self.size // 2, self.y + self.size // 2, angle, self.projectile_size))
 
     def take_damage(self):
-        # Reduce Boss's health and reset mode if hit threshold is reached
-        self.health -= 100
-        self.hits_taken += 1
-        if self.hits_taken >= 3:
-            self.hits_taken = 0
-            self.mode = "chase"
-            self.mode_timer = BOSS_CHASE_DURATION
+        self.health -= 1
+        self.projectile_size += 2
+        self.teleport()
+
+    def teleport(self):
+        angle = random.uniform(0, 2 * math.pi)
+        new_x = self.x + math.cos(angle) * MERLIN_TELEPORT_DISTANCE
+        new_y = self.y + math.sin(angle) * MERLIN_TELEPORT_DISTANCE
+        self.x = max(0, min(WIDTH - self.size, new_x))
+        self.y = max(0, min(HEIGHT - self.size, new_y))
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, BLUE, (self.x, self.y, self.size, self.size))
+        self.draw_health_bar(screen)
+
+    def draw_health_bar(self, screen):
+        health_ratio = self.health / self.max_health
+        bar_width = BOSS_HEALTH_BAR_WIDTH * health_ratio
+        
+        # Draw border
+        pygame.draw.rect(screen, WHITE, ((WIDTH - BOSS_HEALTH_BAR_WIDTH) // 2 - BOSS_HEALTH_BAR_BORDER, 
+                                         HEIGHT - 50 - BOSS_HEALTH_BAR_BORDER, 
+                                         BOSS_HEALTH_BAR_WIDTH + 2 * BOSS_HEALTH_BAR_BORDER, 
+                                         BOSS_HEALTH_BAR_HEIGHT + 2 * BOSS_HEALTH_BAR_BORDER))
+        
+        # Draw background
+        pygame.draw.rect(screen, BLACK, ((WIDTH - BOSS_HEALTH_BAR_WIDTH) // 2, 
+                                         HEIGHT - 50, 
+                                         BOSS_HEALTH_BAR_WIDTH, 
+                                         BOSS_HEALTH_BAR_HEIGHT))
+        
+        # Draw health
+        pygame.draw.rect(screen, RED, ((WIDTH - BOSS_HEALTH_BAR_WIDTH) // 2, 
+                                       HEIGHT - 50, 
+                                       bar_width, 
+                                       BOSS_HEALTH_BAR_HEIGHT))
+        
+        # Draw boss name
+        font = pygame.font.Font(None, 24)
+        name_text = font.render("Merlin, the Wise", True, WHITE)
+        screen.blit(name_text, ((WIDTH - name_text.get_width()) // 2, HEIGHT - 80))
+        
+        
+
+class Lancelot:
+    def __init__(self):
+        self.x = random.randint(0, WIDTH - LANCELOT_SIZE)
+        self.y = random.randint(0, HEIGHT - LANCELOT_SIZE)
+        self.size = LANCELOT_SIZE
+        self.max_health = 3
+        self.health = self.max_health
+        self.state = "aiming"
+        self.timer = LANCELOT_AIM_DURATION
+        self.charge_direction = (0, 0)
+        self.charge_speed = LANCELOT_CHARGE_SPEED
+
+    def update(self, trogdor):
+        if self.state == "aiming":
+            self.timer -= 1
+            if self.timer <= 0:
+                self.start_charge(trogdor)
+        elif self.state == "charging":
+            self.x += self.charge_direction[0] * self.charge_speed
+            self.y += self.charge_direction[1] * self.charge_speed
+            if self.x <= 0 or self.x >= WIDTH - self.size or self.y <= 0 or self.y >= HEIGHT - self.size:
+                self.state = "vulnerable"
+                self.timer = LANCELOT_VULNERABLE_DURATION
+        elif self.state == "vulnerable":
+            self.timer -= 1
+            if self.timer <= 0:
+                self.state = "aiming"
+                self.timer = LANCELOT_AIM_DURATION
+
+    def start_charge(self, trogdor):
+        angle = math.atan2(trogdor.y - self.y, trogdor.x - self.x)
+        self.charge_direction = (math.cos(angle), math.sin(angle))
+        self.state = "charging"
+
+    def take_damage(self):
+        if self.state == "vulnerable":
+            self.health -= 1
+            self.charge_speed += 2
+            self.state = "aiming"
+            self.timer = LANCELOT_AIM_DURATION
+
+    def draw(self, screen):
+        color = RED if self.state == "charging" else (GREEN if self.state == "vulnerable" else YELLOW)
+        pygame.draw.rect(screen, color, (self.x, self.y, self.size, self.size))
+        self.draw_health_bar(screen)
+
+    def draw_health_bar(self, screen):
+        health_ratio = self.health / self.max_health
+        bar_width = BOSS_HEALTH_BAR_WIDTH * health_ratio
+        
+        # Draw border
+        pygame.draw.rect(screen, WHITE, ((WIDTH - BOSS_HEALTH_BAR_WIDTH) // 2 - BOSS_HEALTH_BAR_BORDER, 
+                                         HEIGHT - 50 - BOSS_HEALTH_BAR_BORDER, 
+                                         BOSS_HEALTH_BAR_WIDTH + 2 * BOSS_HEALTH_BAR_BORDER, 
+                                         BOSS_HEALTH_BAR_HEIGHT + 2 * BOSS_HEALTH_BAR_BORDER))
+        
+        # Draw background
+        pygame.draw.rect(screen, BLACK, ((WIDTH - BOSS_HEALTH_BAR_WIDTH) // 2, 
+                                         HEIGHT - 50, 
+                                         BOSS_HEALTH_BAR_WIDTH, 
+                                         BOSS_HEALTH_BAR_HEIGHT))
+        
+        # Draw health
+        pygame.draw.rect(screen, RED, ((WIDTH - BOSS_HEALTH_BAR_WIDTH) // 2, 
+                                       HEIGHT - 50, 
+                                       bar_width, 
+                                       BOSS_HEALTH_BAR_HEIGHT))
+        
+        # Draw boss name
+        font = pygame.font.Font(None, 24)
+        name_text = font.render("Lancelot, the Mad", True, WHITE)
+        screen.blit(name_text, ((WIDTH - name_text.get_width()) // 2, HEIGHT - 80))
+
+
+class DragonKing:
+    def __init__(self):
+        self.x = random.randint(0, WIDTH - LANCELOT_SIZE)
+        self.y = random.randint(0, HEIGHT - LANCELOT_SIZE)
+        self.size = LANCELOT_SIZE * 1.5
+        self.max_health = 5
+        self.health = self.max_health
+        self.state = "flying"
+        self.timer = 180
+        self.fire_breath = []
+
+    def update(self, trogdor):
+        if self.state == "flying":
+            self.timer -= 1
+            if self.timer <= 0:
+                self.state = "breathing fire"
+                self.timer = 120
+        elif self.state == "breathing fire":
+            if self.timer % 20 == 0:
+                angle = math.atan2(trogdor.y - self.y, trogdor.x - self.x)
+                self.fire_breath.append((self.x, self.y, angle))
+            self.timer -= 1
+            if self.timer <= 0:
+                self.state = "flying"
+                self.timer = 180
+
+        if self.state == "flying":
+            angle = math.atan2(trogdor.y - self.y, trogdor.x - self.x)
+            self.x += math.cos(angle) * 2
+            self.y += math.sin(angle) * 2
+
+        for i, (fx, fy, fangle) in enumerate(self.fire_breath):
+            self.fire_breath[i] = (fx + math.cos(fangle) * 5, fy + math.sin(fangle) * 5, fangle)
+
+        self.fire_breath = [f for f in self.fire_breath if 0 <= f[0] < WIDTH and 0 <= f[1] < HEIGHT]
+
+    def take_damage(self):
+        self.health -= 1
+
+    def draw(self, screen):
+        color = ORANGE if self.state == "breathing fire" else RED
+        pygame.draw.rect(screen, color, (self.x, self.y, self.size, self.size))
+        for fx, fy, _ in self.fire_breath:
+            pygame.draw.circle(screen, ORANGE, (int(fx), int(fy)), 5)
+        self.draw_health_bar(screen)
+
+    def draw_health_bar(self, screen):
+        health_ratio = self.health / self.max_health
+        bar_width = BOSS_HEALTH_BAR_WIDTH * health_ratio
+        
+        # Draw border
+        pygame.draw.rect(screen, WHITE, ((WIDTH - BOSS_HEALTH_BAR_WIDTH) // 2 - BOSS_HEALTH_BAR_BORDER, 
+                                         HEIGHT - 50 - BOSS_HEALTH_BAR_BORDER, 
+                                         BOSS_HEALTH_BAR_WIDTH + 2 * BOSS_HEALTH_BAR_BORDER, 
+                                         BOSS_HEALTH_BAR_HEIGHT + 2 * BOSS_HEALTH_BAR_BORDER))
+        
+        # Draw background
+        pygame.draw.rect(screen, BLACK, ((WIDTH - BOSS_HEALTH_BAR_WIDTH) // 2, 
+                                         HEIGHT - 50, 
+                                         BOSS_HEALTH_BAR_WIDTH, 
+                                         BOSS_HEALTH_BAR_HEIGHT))
+        
+        # Draw health
+        pygame.draw.rect(screen, RED, ((WIDTH - BOSS_HEALTH_BAR_WIDTH) // 2, 
+                                       HEIGHT - 50, 
+                                       bar_width, 
+                                       BOSS_HEALTH_BAR_HEIGHT))
+
+        # Draw boss name
+        font = pygame.font.Font(None, 24)
+        name_text = font.render("Dragon King", True, WHITE)
+        screen.blit(name_text, ((WIDTH - name_text.get_width()) // 2, HEIGHT - 80))
 
 # Power-Ups
 class PowerUp:
@@ -284,12 +432,19 @@ class ExtraLife(PowerUp):
 def initialize_game(level):
     # Initialize game entities based on the level
     trogdor = Trogdor()
-    houses = [House() for _ in range(level + 2)]
-    peasants = []
-    knights = [Knight() for _ in range(min(level, 5))]
-    boss = Boss() if level % 5 == 0 else None
+    houses = [House() for _ in range(level + 2)] if level not in [5, 10] else []
+    peasants = [] if level not in [5, 10] else []
+    knights = [Knight() for _ in range(min(level, 5))] if level not in [5, 10] else []
+    boss = None
     projectiles = []
+
+    if level == 5:
+        boss = random.choice([Merlin(), Lancelot()])
+    elif level == 10:
+        boss = DragonKing()
+
     return trogdor, houses, peasants, knights, boss, projectiles
+
 
 def draw_burnination_bar(screen, trogdor, burnination_duration):
     # Draw the burnination bar on the screen
@@ -451,32 +606,42 @@ def game_loop():
         
         # Update the boss if it exists
         if boss:
-            boss.update(trogdor, projectiles)
-            # Check for collisions between Trogdor and the boss
+            if isinstance(boss, Merlin):
+                boss.update(trogdor, projectiles)
+            elif isinstance(boss, DragonKing):
+                for fx, fy, _ in boss.fire_breath:
+                    if (abs(trogdor.x + trogdor.size/2 - fx) < trogdor.size/2 + 5 and
+                        abs(trogdor.y + trogdor.size/2 - fy) < trogdor.size/2 + 5):
+                        lives -= 1
+                        trogdor.peasants_stomped = 0
+                        trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                        trogdor.burnination_mode = False
+                        if lives <= 0:
+                            return True
+
             if (abs(trogdor.x - boss.x) < trogdor.size + boss.size and
                 abs(trogdor.y - boss.y) < trogdor.size + boss.size):
-                if boss.mode == "chase":
-                    lives -= 1
-                    trogdor.peasants_stomped = 0
-                    trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
-                    trogdor.burnination_mode = False
-                    if lives <= 0:
-                        return True  # End the game if no lives are left
+                if isinstance(boss, Lancelot):
+                    if boss.state == "vulnerable":
+                        boss.take_damage()
+                    elif boss.state == "charging":
+                        lives -= 1
+                        trogdor.peasants_stomped = 0
+                        trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                        trogdor.burnination_mode = False
+                        if lives <= 0:
+                            return True
                 else:
                     boss.take_damage()
-                    # Push Trogdor back upon collision with the boss
-                    angle = math.atan2(trogdor.y - boss.y, trogdor.x - boss.x)
-                    trogdor.x += math.cos(angle) * 50
-                    trogdor.y += math.sin(angle) * 50
-            # Remove the boss if its health drops to zero
-            if boss.health <= 0:
-                boss = None
-                level += 1
-                burnination_threshold += 2
-                houses_crushed = 0
-                trogdor, houses, peasants, knights, boss, projectiles = initialize_game(level)
-                peasants.clear()
-                select_power_up(trogdor)
+
+                if boss.health <= 0:
+                    boss = None
+                    level += 1
+                    if level > 10:
+                        show_congratulations_screen()
+                        return True
+                    trogdor, houses, peasants, knights, boss, projectiles = initialize_game(level)
+                    select_power_up(trogdor)
         
         # Move all projectiles
         for projectile in projectiles[:]:
@@ -520,8 +685,7 @@ def game_loop():
         
         # Draw the boss if it exists
         if boss:
-            boss.draw(screen)
-        
+            boss.draw(screen)        
         # Draw Trogdor
         trogdor.draw()
         
@@ -540,9 +704,8 @@ def game_loop():
         
         # Display boss text if the boss exists
         if boss:
-            boss_text = font.render("BOSS: Strongbad the Destroyer", True, RED)
+            boss_text = font.render(f"BOSS: {type(boss).__name__}", True, RED)
             screen.blit(boss_text, (WIDTH // 2 - boss_text.get_width() // 2, HEIGHT - 40))
-        
         # Draw the burnination bar if Trogdor is in burnination mode
         if trogdor.burnination_mode:
             draw_burnination_bar(screen, trogdor, burnination_duration)
@@ -554,6 +717,24 @@ def game_loop():
         clock.tick(FPS)
     
     return False  # Exit the game loop
+
+def show_congratulations_screen():
+    screen.fill(BLACK)
+    font = pygame.font.Font(None, 48)
+    congrats_text = font.render("Congratulations!  You've defeated the Dragon King!", True, YELLOW)
+    future_text = font.render("You are the ultimate Burninator!", True, WHITE)
+    screen.blit(congrats_text, (WIDTH // 2 - congrats_text.get_width() // 2, HEIGHT // 2 - 50))
+    screen.blit(future_text, (WIDTH // 2 - future_text.get_width() // 2, HEIGHT // 2 + 50))
+    pygame.display.flip()
+    
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return
+            if event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
+                waiting = False
+
 
 def select_power_up(trogdor):
     # List of available power-ups
@@ -668,90 +849,120 @@ def start_screen():
                             return "exit"
                     # Move the y-coordinate down for the next button
                     button_y += BUTTON_HEIGHT + BUTTON_PADDING
+#Boss Selection Menu
+def boss_selection_screen():
+    screen.fill(BLACK)
+    font = pygame.font.Font(None, MENU_FONT_SIZE)
+    title = font.render("Select a Boss", True, WHITE)
+    screen.blit(title, (WIDTH/2 - title.get_width()/2, HEIGHT/4))
 
-def boss_practice():
-    # Initialize the player character (Trogdor) and the boss
+    buttons = [
+        ("Merlin", BLUE),
+        ("Lancelot", RED),
+        ("Dragon King", ORANGE),
+        ("Back", GREEN)
+    ]
+
+    button_y = HEIGHT/2
+    for text, color in buttons:
+        draw_button(screen, text, WIDTH/2 - BUTTON_WIDTH/2, button_y, BUTTON_WIDTH, BUTTON_HEIGHT, color, WHITE)
+        button_y += BUTTON_HEIGHT + BUTTON_PADDING
+
+    pygame.display.flip()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return "exit"
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                button_y = HEIGHT/2
+                for text, _ in buttons:
+                    button_rect = pygame.Rect(WIDTH/2 - BUTTON_WIDTH/2, button_y, BUTTON_WIDTH, BUTTON_HEIGHT)
+                    if button_rect.collidepoint(mouse_pos):
+                        return text.lower().replace(" ", "")
+                    button_y += BUTTON_HEIGHT + BUTTON_PADDING
+ #Boss Practice Mode                   
+def boss_practice(boss_type):
     trogdor = Trogdor()
-    boss = Boss()
-    projectiles = []  # List to store projectiles
-    lives = INITIAL_LIVES  # Set initial number of lives
+    boss = None
+    if boss_type == "merlin":
+        boss = Merlin()
+    elif boss_type == "lancelot":
+        boss = Lancelot()
+    elif boss_type == "dragonking":
+        boss = DragonKing()
+    projectiles = []
+    lives = INITIAL_LIVES
 
-    clock = pygame.time.Clock()  # Create a clock object to manage frame rate
-    running = True  # Flag to keep the game loop running
+    clock = pygame.time.Clock()
+    running = True
 
     while running:
-        # Event handling loop
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:  # If the quit event is triggered, exit the function
+            if event.type == pygame.QUIT:
                 return
 
-        # Get the state of all keyboard keys
         keys = pygame.key.get_pressed()
-        # Move Trogdor based on arrow key inputs
         trogdor.move(keys[pygame.K_RIGHT] - keys[pygame.K_LEFT], keys[pygame.K_DOWN] - keys[pygame.K_UP])
 
-        # Update the boss's state based on Trogdor's position and projectiles
-        boss.update(trogdor, projectiles)
+        if isinstance(boss, Merlin):
+            boss.update(trogdor, projectiles)
+        else:
+            boss.update(trogdor)
 
-        # Check for collision between Trogdor and the boss
+        if isinstance(boss, DragonKing):
+            for fx, fy, _ in boss.fire_breath:
+                if (abs(trogdor.x + trogdor.size/2 - fx) < trogdor.size/2 + 5 and
+                    abs(trogdor.y + trogdor.size/2 - fy) < trogdor.size/2 + 5):
+                    lives -= 1
+                    trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                    if lives <= 0:
+                        return
+
         if (abs(trogdor.x - boss.x) < trogdor.size + boss.size and
             abs(trogdor.y - boss.y) < trogdor.size + boss.size):
-            if boss.mode == "chase":  # If the boss is in chase mode
-                lives -= 1  # Decrease lives
-                # Reset Trogdor's position
+            if isinstance(boss, Lancelot) and boss.state != "vulnerable":
+                lives -= 1
                 trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
-                if lives <= 0:  # If no lives are left, exit the function
+                if lives <= 0:
                     return
-            else:  # If the boss is not in chase mode
-                boss.take_damage()  # Boss takes damage
-                # Calculate the angle to knock Trogdor back
-                angle = math.atan2(trogdor.y - boss.y, trogdor.x - boss.x)
-                # Knock Trogdor back
-                trogdor.x += math.cos(angle) * 50
-                trogdor.y += math.sin(angle) * 50
+            else:
+                boss.take_damage()
+                if isinstance(boss, Lancelot):
+                    angle = math.atan2(trogdor.y - boss.y, trogdor.x - boss.x)
+                    trogdor.x += math.cos(angle) * 50
+                    trogdor.y += math.sin(angle) * 50
 
-        # If the boss's health is depleted, exit the function
         if boss.health <= 0:
             return
 
-        # Update and check projectiles
         for projectile in projectiles[:]:
-            projectile.move()  # Move the projectile
-            # Remove projectile if it goes out of bounds
+            projectile.move()
             if (projectile.x < 0 or projectile.x > WIDTH or
                 projectile.y < 0 or projectile.y > HEIGHT):
                 projectiles.remove(projectile)
-            # Check for collision between Trogdor and the projectile
             elif (abs(trogdor.x + trogdor.size/2 - projectile.x) < trogdor.size/2 + projectile.size and
                   abs(trogdor.y + trogdor.size/2 - projectile.y) < trogdor.size/2 + projectile.size):
-                lives -= 1  # Decrease lives
-                # Reset Trogdor's position
+                lives -= 1
                 trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
-                projectiles.remove(projectile)  # Remove the projectile
-                if lives <= 0:  # If no lives are left, exit the function
+                projectiles.remove(projectile)
+                if lives <= 0:
                     return
 
-        # Clear the screen
         screen.fill(BLACK)
-        # Draw all projectiles
         for projectile in projectiles:
             projectile.draw(screen)
-        # Draw the boss
         boss.draw(screen)
-        # Draw Trogdor
         trogdor.draw()
 
-        # Render the text for lives and boss name
         font = pygame.font.Font(None, 36)
         lives_text = font.render(f"Lives: {lives}", True, RED)
-        boss_text = font.render("BOSS: Strongbad the Destroyer", True, RED)
-        # Display the text on the screen
+        boss_text = font.render(f"BOSS: {type(boss).__name__}", True, RED)
         screen.blit(lives_text, (10, 10))
-        screen.blit(boss_text, (WIDTH // 2 - boss_text.get_width() // 2, HEIGHT - 40))
+        screen.blit(boss_text, (WIDTH // 2 - boss_text.get_width() // 2, 10))
 
-        # Update the display
         pygame.display.flip()
-        # Cap the frame rate
         clock.tick(FPS)
 
 def main():
@@ -765,7 +976,9 @@ def main():
         if choice == "start":
             game_loop()
         elif choice == "boss":
-            boss_practice()
+            boss_choice = boss_selection_screen()
+            if boss_choice in ["merlin", "lancelot", "dragonking"]:
+                boss_practice(boss_choice)
         elif choice == "exit":
             break
 

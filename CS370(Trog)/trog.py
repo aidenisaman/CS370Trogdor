@@ -16,6 +16,7 @@ pygame.display.set_caption("Trogdor the Burninator")
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
+LGREEN =(65, 150, 72)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 ORANGE = (255, 165, 0)
@@ -80,9 +81,10 @@ class Goblin:
         self.y = random.randint(0, HEIGHT)
         self.size = GOB_SIZE
         self.speed = GOB_SPEED
+        self.move_timer = 0
         self.chasing = True
     def draw(self):
-        color = GREEN #maybe make it change color when he blows up
+        color = LGREEN #maybe make it change color when he blows up
         pygame.draw.rect(screen, color, (self.x, self.y, self.size, self.size))
     def chase(self, trogdor):
         # Set Goblin's direction towards Trogdor
@@ -303,6 +305,7 @@ def initialize_game(level):
     boss = Boss() if level % 5 == 0 else None
     projectiles = []
     goblins = Goblin()
+    #goblins = [Goblin() for _ in range(min(level, 5))]
     return trogdor, houses, peasants, knights, boss, projectiles, goblins
 
 def draw_burnination_bar(screen, trogdor, burnination_duration):
@@ -379,6 +382,15 @@ def game_loop():
                 trogdor.burnination_mode = False
                 if lives <= 0:
                     return True  # End the game if no lives are left
+        # chech for collisions between torgor and knigths      
+        #for goblin in goblins:
+        #    if (abs(trogdor.x - goblin.x) < trogdor.size and
+        #       abs(trogdor.y - goblin.y) < trogdor.size):
+        #        lives -= 1
+        #        trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+        #        trogdor.burnination_mode = False
+        #        if lives <= 0:
+        #            return True  # End the game if no lives are left
         
         # Check for collisions between Trogdor and houses
         for house in houses[:]:
@@ -394,7 +406,7 @@ def game_loop():
                             level += 1
                             burnination_threshold += 2
                             houses_crushed = 0
-                            trogdor, houses, peasants, knights, boss, projectiles = initialize_game(level)
+                            trogdor, houses, peasants, knights, boss, projectiles,goblins = initialize_game(level)
                             peasants.clear()
                             select_power_up(trogdor)
         
@@ -464,8 +476,9 @@ def game_loop():
             knight.draw()
         
         # Draw all Goblins
-        for goblin in goblins:
-            goblin.draw()
+        goblins.draw()
+        #for goblin in goblins:
+        #    goblin.draw()
         # Draw all projectiles
         for projectile in projectiles:
             projectile.draw(screen)

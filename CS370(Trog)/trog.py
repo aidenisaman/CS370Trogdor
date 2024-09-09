@@ -96,6 +96,7 @@ class Goblin:
         dy = math.sin(self.direction) * self.speed
         self.x = max(0, min(WIDTH - self.size, self.x + dx))
         self.y = max(0, min(HEIGHT - self.size, self.y + dy))
+    pygame.font.get_default_font()
 # Game objects
 class Trogdor:
     def __init__(self):
@@ -301,7 +302,8 @@ def initialize_game(level):
     knights = [Knight() for _ in range(min(level, 5))]
     boss = Boss() if level % 5 == 0 else None
     projectiles = []
-    return trogdor, houses, peasants, knights, boss, projectiles
+    goblins = Goblin()
+    return trogdor, houses, peasants, knights, boss, projectiles, goblins
 
 def draw_burnination_bar(screen, trogdor, burnination_duration):
     # Draw the burnination bar on the screen
@@ -322,7 +324,7 @@ def game_loop():
     burnination_duration = BURNINATION_DURATION
     
     # Initialize game entities for the current level
-    trogdor, houses, peasants, knights, boss, projectiles = initialize_game(level)
+    trogdor, houses, peasants, knights, boss, projectiles, goblins= initialize_game(level)
     
     # Set the game loop running flag to True
     running = True
@@ -421,7 +423,7 @@ def game_loop():
                 level += 1
                 burnination_threshold += 2
                 houses_crushed = 0
-                trogdor, houses, peasants, knights, boss, projectiles = initialize_game(level)
+                trogdor, houses, peasants, knights, boss, projectiles,goblins = initialize_game(level)
                 peasants.clear()
                 select_power_up(trogdor)
         
@@ -461,6 +463,9 @@ def game_loop():
         for knight in knights:
             knight.draw()
         
+        # Draw all Goblins
+        for goblin in goblins:
+            goblin.draw()
         # Draw all projectiles
         for projectile in projectiles:
             projectile.draw(screen)

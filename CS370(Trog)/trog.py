@@ -458,22 +458,19 @@ def initialize_game(level):
     houses = [House() for _ in range(level + 2)] if level not in [5, 10] else []
     peasants = [] if level not in [5, 10] else []
     knights = [Knight() for _ in range(min(level, 5))] if level not in [5, 10] else []
-    boss = None
-    houses = [House() for _ in range(level + 2)]
-    peasants = []
+    
     guardians = []
-    for _ in range(level + 1):
+    for _ in range(level + 1) if level not in [5,10] else []:
         guardians.append(Guardian(random.choice(houses)))
-    knights = [Knight() for _ in range(min(level, 5))]
-    boss = Boss() if level % 5 == 0 else None
+
     projectiles = []
+    boss = None
 
     if level == 5:
         boss = random.choice([Merlin(), Lancelot()])
     elif level == 10:
         boss = DragonKing()
 
-    return trogdor, houses, peasants, knights, boss, projectiles
     return trogdor, houses, peasants, guardians, knights, boss, projectiles
 
 

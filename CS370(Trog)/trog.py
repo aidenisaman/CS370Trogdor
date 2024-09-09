@@ -184,8 +184,8 @@ class Guardian:
     
     def move(self, angle):
         #Circle a house
-        dx = math.cos(angle) * self.speed * 2
-        dy = math.sin(angle) * self.speed * 2
+        dx = math.cos(angle) * self.speed * 2.5
+        dy = math.sin(angle) * self.speed * 2.5
         self.x = max(0, min(WIDTH - self.size, self.x + dx))
         self.y = max(0, min(HEIGHT - self.size, self.y + dy))
 
@@ -433,7 +433,7 @@ def game_loop():
         # Move guardians around house
         for guardian in guardians:
             guardian.move(guardian_angle)
-        guardian_angle += 0.02
+        guardian_angle += 0.0175 # Higher number makes smaller circle, lower wider circle
         
         # Randomly spawn new peasants if there are houses available
         if random.random() < PEASANT_SPAWN_PROBABILITY and houses:

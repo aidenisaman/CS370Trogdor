@@ -7,6 +7,7 @@ import math
 # Initialize Pygame
 pygame.init()
 
+  # -1 means the music will loop indefinitely
 # Set up the display
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -35,6 +36,12 @@ KNIGHT_SIZE = 15
 KNIGHT_SPEED = 0.75
 KNIGHT_DIRECTION_CHANGE_INTERVAL = 120  # Frames
 KNIGHT_CHASE_PROBABILITY = 0.2  # 20% chance to chase Trogdor
+
+LANCER_SIZE = 30
+LANCER_SPEED = 1.25
+LANCER_DIRECTION_CHANGE_INTERVAL = 60
+TROGDOR_INITIAL_X = WIDTH // 2
+TROGDOR_INITIAL_Y = HEIGHT // 2
 
 HOUSE_SIZE = 30
 HOUSE_HEALTH = 100
@@ -158,6 +165,41 @@ class Knight:
         # Draw Knight on the screen
         pygame.draw.rect(screen, BLUE, (self.x, self.y, self.size, self.size))
 
+class Lancer:
+    def __init__(self):
+        self.x = random.randint(0, WIDTH - LANCER_SIZE)
+        self.y = random.randint(0, HEIGHT - LANCER_SIZE)
+        self.size = LANCER_SIZE
+        self.speed = LANCER_SPEED
+        self.direction = None
+        self.moving = False
+
+    def move(self, trogdor):
+        if self.is_in_line_of_sight(trogdor):
+            self.set_direction(trogdor)
+            self.moving = True
+        else:
+            self.moving = False
+
+        if self.moving and self.direction is not None:
+            dx = math.cos(self.direction) * self.speed if self.direction in [0, math.pi] else 0
+            dy = math.sin(self.direction) * self.speed if self.direction in [math.pi / 2, -math.pi / 2] else 0
+            self.x = max(0, min(WIDTH - self.size, self.x + dx))
+            self.y = max(0, min(HEIGHT - self.size, self.y + dy))
+
+    def is_in_line_of_sight(self, trogdor):
+        return self.x == trogdor.x or self.y == trogdor.y
+
+    def set_direction(self, trogdor):
+        if self.x == trogdor.x:
+            self.direction = math.pi / 2 if trogdor.y > self.y else -math.pi / 2
+        elif self.y == trogdor.y:
+            self.direction = 0 if trogdor.x > self.x else math.pi
+
+    def draw(self):
+        pygame.draw.rect(screen, WHITE, (self.x, self.y, self.size, self.size))
+
+
 class House:
     def __init__(self):
         # Initialize House's position, size, and health
@@ -261,6 +303,22 @@ class Boss:
             self.hits_taken = 0
             self.mode = "chase"
             self.mode_timer = BOSS_CHASE_DURATION
+            
+def load_music(level):
+    # Stop any currently playing music
+    pygame.mixer.music.stop()
+    
+    # Load the music file based on the level
+    music_file = "C:\Users\BJ\Downloads\Level !  But It s Actually a Soundtrack REMASTERED.mp3"
+    pygame.mixer.music.load(music_file)
+    pygame.mixer.music.play(-1)  # Loop the music indefinitely
+
+def load_background(level):
+    # Load the background image for the given level
+    background_file = ".png"
+    background = pygame.image.load(background_file)
+    background = pygame.transform.scale(background, (WIDTH, HEIGHT))  # Resize to fit screen
+    return background
 
 # Power-Ups
 class PowerUp:
@@ -284,14 +342,17 @@ class ExtraLife(PowerUp):
         game_state['lives'] += POWER_UP_EXTRA_LIFE
 
 def initialize_game(level):
-    # Initialize game entities based on the level
+    # Initialize game entities based on the level 
+    load_music(level)
+    background = load_background(level)
     trogdor = Trogdor()
     houses = [House() for _ in range(level + 2)]
     peasants = []
     knights = [Knight() for _ in range(min(level, 5))]
+    lancers = [Lancer() for _ in range(max(1, level // 3))]
     boss = Boss() if level % 5 == 0 else None
     projectiles = []
-    return trogdor, houses, peasants, knights, boss, projectiles
+    return trogdor, houses, peasants, knights,lancers, boss, projectiles, background
 
 def draw_burnination_bar(screen, trogdor, burnination_duration):
     # Draw the burnination bar on the screen
@@ -312,7 +373,7 @@ def game_loop():
     burnination_duration = BURNINATION_DURATION
     
     # Initialize game entities for the current level
-    trogdor, houses, peasants, knights, boss, projectiles = initialize_game(level)
+    trogdor, houses, peasants, knights, lancers, boss, projectiles = initialize_game(level)
     
     # Set the game loop running flag to True
     running = True
@@ -341,6 +402,9 @@ def game_loop():
         for knight in knights:
             knight.move(trogdor)
         
+        for lancer in lancers:
+            lancer.move(trogdor)
+
         # Randomly spawn new peasants if there are houses available
         if random.random() < PEASANT_SPAWN_PROBABILITY and houses:
             peasants.append(Peasant(random.choice(houses)))
@@ -367,6 +431,17 @@ def game_loop():
                 trogdor.burnination_mode = False
                 if lives <= 0:
                     return True  # End the game if no lives are left
+        
+         # Check for collisions with Trogdor
+        for lancer in lancers:
+            if (abs(trogdor.x - lancer.x) < trogdor.size and
+                abs(trogdor.y - lancer.y) < trogdor.size):
+                lives -= 1
+                trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                trogdor.burnination_mode = False
+                if lives <= 0:
+                    running = False  # End the game if no lives are left
+
         
         # Check for collisions between Trogdor and houses
         for house in houses[:]:
@@ -411,7 +486,7 @@ def game_loop():
                 level += 1
                 burnination_threshold += 2
                 houses_crushed = 0
-                trogdor, houses, peasants, knights, boss, projectiles = initialize_game(level)
+                trogdor, houses, peasants, knights, lancers, boss, projectiles = initialize_game(level)
                 peasants.clear()
                 select_power_up(trogdor)
         
@@ -451,6 +526,9 @@ def game_loop():
         for knight in knights:
             knight.draw()
         
+        for lancer in lancers:
+            lancer.draw()
+
         # Draw all projectiles
         for projectile in projectiles:
             projectile.draw(screen)

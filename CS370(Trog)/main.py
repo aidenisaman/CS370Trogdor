@@ -9,6 +9,7 @@ Functions:
 import random
 import pygame
 import math
+from ui import draw_background, initialize_background_images
 
 # Initialize Pygame
 pygame.init()
@@ -188,6 +189,7 @@ def game_loop(screen):
         
         # Drawing
         screen.fill(BLACK)
+        draw_background(screen, 'level')
         
         for house in houses:
             house.draw(screen)
@@ -325,9 +327,27 @@ def boss_practice(screen, boss_type):
     print("Exiting boss practice")  # Debug print
 
 def main():
+    # Initialize Pygame
+    pygame.init()
+    
+    # Initialize the display
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption("Trogdor the Burninator")
+    
+    # Initialize background images
+    initialize_background_images()
+    
     running = True
     while running:
         print("Starting main menu...")  # Debug print
+        
+        # Try to draw the menu background, fall back to black if it fails
+        try:
+            draw_background(screen, 'menu')
+        except Exception as e:
+            print(f"Error drawing menu background: {e}")
+            screen.fill(BLACK)
+        
         choice = start_screen(screen)
         print(f"User chose: {choice}")  # Debug print
         
@@ -351,4 +371,3 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"An error occurred: {e}")
         pygame.quit()
-        

@@ -10,9 +10,107 @@ Functions:
 """
 
 import pygame
+import os
+import sys
 from utils import WIDTH, HEIGHT, BLACK, WHITE, GREEN, RED, BLUE, ORANGE, YELLOW
 from utils import MENU_FONT_SIZE, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_PADDING
 
+def find_data_file(filename):
+    if getattr(sys, 'frozen', False):
+        datadir = os.path.dirname(sys.executable)
+    else:
+        datadir = os.path.dirname(__file__)
+
+    locations = [
+        os.path.join(datadir, 'assets', filename),
+        os.path.join(datadir, '..', 'assets', filename),
+        os.path.join(datadir, filename),
+        os.path.join('assets', filename),
+    ]
+
+    for location in locations:
+        if os.path.exists(location):
+            print(f"Found image file: {location}")  # Debug print
+            return location
+
+    print(f"Could not find image file: {filename}")  # Debug print
+    return None
+
+def load_image(name, colorkey=None):
+    fullname = find_data_file(name)
+    if fullname is None:
+        print(f'Cannot find image: {name}')
+        return None
+
+    try:
+        image = pygame.image.load(fullname)
+        print(f"Successfully loaded image: {name}")  # Debug print
+    except pygame.error as message:
+        print('Cannot load image:', name)
+        print(message)
+        return None
+
+    if pygame.display.get_surface() is not None:
+        try:
+            image = image.convert_alpha()
+            print(f"Successfully converted image: {name}")  # Debug print
+        except pygame.error as e:
+            print(f"Error converting image {name}: {e}")
+            # If conversion fails, return the unconverted image
+            return image
+    if colorkey is not None:
+        if colorkey == -1:
+            colorkey = image.get_at((0,0))
+        image.set_colorkey(colorkey, pygame.RLEACCEL)
+    return image
+
+def load_background_images():
+    backgrounds = {}
+    for bg_type, filename in [('menu', 'menu.webp'), ('level', 'level.webp')]:
+        image = load_image(filename)
+        if image:
+            backgrounds[bg_type] = image
+        else:
+            print(f"Failed to load {bg_type} background")
+    return backgrounds
+
+BACKGROUND_IMAGES = None
+
+def initialize_background_images():
+    global BACKGROUND_IMAGES
+    BACKGROUND_IMAGES = load_background_images()
+    print("Loaded background images:", list(BACKGROUND_IMAGES.keys()))  # Debug print
+
+def draw_background(screen, background_type):
+    global BACKGROUND_IMAGES
+    if BACKGROUND_IMAGES is None:
+        initialize_background_images()
+    
+    background = BACKGROUND_IMAGES.get(background_type)
+    if background:
+        print(f"Drawing {background_type} background")
+        print(f"Background size: {background.get_size()}")
+        print(f"Screen size: {screen.get_size()}")
+        
+        # Check if the background needs to be scaled
+        if background.get_size() != screen.get_size():
+            print("Scaling background to fit screen")
+            background = pygame.transform.scale(background, screen.get_size())
+        
+        try:
+            screen.blit(background, (0, 0))
+            print(f"Successfully blitted {background_type} background")
+        except pygame.error as e:
+            print(f"Error blitting {background_type} background: {e}")
+            screen.fill(BLACK)
+    else:
+        print(f"Error: Background image for '{background_type}' not found.")
+        screen.fill(BLACK)
+    
+    # Add a visual indicator
+    font = pygame.font.Font(None, 36)
+    text = font.render(f"{background_type.capitalize()} Background", True, RED)
+    screen.blit(text, (10, 10))
 
 def draw_button(screen, text, x, y, width, height, color, text_color):
     # Draw the button rectangle on the screen
@@ -31,8 +129,9 @@ def draw_button(screen, text, x, y, width, height, color, text_color):
     screen.blit(text_surface, text_rect)
 
 def start_screen(screen):
+    draw_background(screen, 'menu')
     # Fill the screen with black color
-    screen.fill(BLACK)
+    
     
     # Create a font object for the title with double the menu font size
     font = pygame.font.Font(None, MENU_FONT_SIZE * 2)

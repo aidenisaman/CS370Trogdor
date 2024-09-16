@@ -483,14 +483,14 @@ def draw_burnination_bar(screen, trogdor, burnination_duration):
     pygame.draw.rect(screen, ORANGE, (WIDTH - bar_width - 10, 10, fill_width, bar_height))
 
 def pause_game():
-    #pause game function triggered on pressing escape
-    #Displays that game is paused and how to continue
+    # Pause game function triggered on pressing escape
+    # Displays that game is paused and how to continue
 
     # Create a font object for the title with double the menu font size
     font = pygame.font.Font(None, MENU_FONT_SIZE * 2)
 
     # Render the title text onto a surface
-    title = font.render("Trogdor the Burninator", True, ORANGE)
+    title = font.render("Game Paused", True, ORANGE)
 
     # Blit the title surface onto the screen, centered horizontally and at 1/4th height
     screen.blit(title, (WIDTH / 2 - title.get_width() / 2, HEIGHT / 4))

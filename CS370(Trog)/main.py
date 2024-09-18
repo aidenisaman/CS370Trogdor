@@ -21,7 +21,7 @@ pygame.mixer.init()  # Initialize the mixer module for sound
 # Set up the display
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Trogdor the Burninator")
+pygame.display.set_caption("Trogdor 2: Return of the Burninator")
 
 from entities import Trogdor, Peasant, Knight, House
 from bosses import Merlin, Lancelot, DragonKing
@@ -35,7 +35,7 @@ pygame.init()
 # Set up the display
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Trogdor the Burninator")
+pygame.display.set_caption("Trogdor 2: Return of the Burninator")
 
 def initialize_game(level):
     trogdor = Trogdor()
@@ -332,7 +332,7 @@ def main():
     
     # Initialize the display
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Trogdor the Burninator")
+    pygame.display.set_caption("Trogdor 2: Retrun of the Burninator")
     
     # Initialize background images
     initialize_background_images()

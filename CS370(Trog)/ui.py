@@ -63,7 +63,6 @@ def load_image(name, colorkey=None):
             colorkey = image.get_at((0,0))
         image.set_colorkey(colorkey, pygame.RLEACCEL)
     return image
-
 def load_background_images():
     backgrounds = {}
     for bg_type, filename in [('menu', 'menu.webp'), ('level', 'level.webp')]:
@@ -106,11 +105,6 @@ def draw_background(screen, background_type):
     else:
         print(f"Error: Background image for '{background_type}' not found.")
         screen.fill(BLACK)
-    
-    # Add a visual indicator
-    font = pygame.font.Font(None, 36)
-    text = font.render(f"{background_type.capitalize()} Background", True, RED)
-    screen.blit(text, (10, 10))
 
 def draw_button(screen, text, x, y, width, height, color, text_color):
     # Draw the button rectangle on the screen
@@ -129,18 +123,21 @@ def draw_button(screen, text, x, y, width, height, color, text_color):
     screen.blit(text_surface, text_rect)
 
 def start_screen(screen):
-    draw_background(screen, 'menu')
-    # Fill the screen with black color
+    # Create a font object for the title
+    title_font = pygame.font.Font(None, MENU_FONT_SIZE * 3 // 2)  # Slightly smaller than before to fit
+    subtitle_font = pygame.font.Font(None, MENU_FONT_SIZE)
     
+    # Render the title text onto surfaces
+    title1 = title_font.render("Trogdor 2", True, RED)
+    title2 = subtitle_font.render("Return of the Burninator", True, RED)
     
-    # Create a font object for the title with double the menu font size
-    font = pygame.font.Font(None, MENU_FONT_SIZE * 2)
+    # Calculate positions to center the title
+    title1_pos = (WIDTH/2 - title1.get_width()/2, HEIGHT/4)
+    title2_pos = (WIDTH/2 - title2.get_width()/2, HEIGHT/4 + title1.get_height())
     
-    # Render the title text onto a surface
-    title = font.render("Trogdor the Burninator", True, ORANGE)
-    
-    # Blit the title surface onto the screen, centered horizontally and at 1/4th height
-    screen.blit(title, (WIDTH/2 - title.get_width()/2, HEIGHT/4))
+    # Blit the title surfaces onto the screen
+    screen.blit(title1, title1_pos)
+    screen.blit(title2, title2_pos)
 
     # Define the buttons with their text and colors
     buttons = [
@@ -150,7 +147,7 @@ def start_screen(screen):
     ]
 
     # Set the initial y-coordinate for the first button
-    button_y = HEIGHT/2
+    button_y = HEIGHT/2 + title1.get_height()  # Moved down slightly to accommodate larger title
     
     # Draw each button on the screen
     for text, color in buttons:
@@ -164,23 +161,20 @@ def start_screen(screen):
     # Event loop to handle user interactions
     while True:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:  # If the quit event is triggered, return "exit"
+            if event.type == pygame.QUIT:
                 return "exit"
-            if event.type == pygame.MOUSEBUTTONDOWN:  # If the mouse button is pressed
-                mouse_pos = pygame.mouse.get_pos()  # Get the position of the mouse click
-                button_y = HEIGHT/2  # Reset the y-coordinate for button checking
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                button_y = HEIGHT/2 + title1.get_height()  # Reset button_y for collision detection
                 for text, _ in buttons:
-                    # Create a rectangle for the current button
                     button_rect = pygame.Rect(WIDTH/2 - BUTTON_WIDTH/2, button_y, BUTTON_WIDTH, BUTTON_HEIGHT)
-                    # Check if the mouse click is within the button rectangle
                     if button_rect.collidepoint(mouse_pos):
-                        if text == "Start":  # If the "Start" button is clicked, return "start"
+                        if text == "Start":
                             return "start"
-                        elif text == "Boss Practice":  # If the "Boss Practice" button is clicked, return "boss"
+                        elif text == "Boss Practice":
                             return "boss"
-                        elif text == "Exit":  # If the "Exit" button is clicked, return "exit"
+                        elif text == "Exit":
                             return "exit"
-                    # Move the y-coordinate down for the next button
                     button_y += BUTTON_HEIGHT + BUTTON_PADDING
 
 #Boss Selection Menu

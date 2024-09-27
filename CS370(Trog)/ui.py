@@ -279,3 +279,53 @@ def pause_game(screen):
                     # Move the y-coordinate down for the next button
                     button_y += BUTTON_HEIGHT + BUTTON_PADDING
 
+def game_over(screen):
+    # game_over function triggered when lives == 0
+    # Displays that game is over and whether to restart or quit
+
+    # Create a font object for the title with double the menu font size
+    font = pygame.font.Font(None, MENU_FONT_SIZE * 2)
+
+    # Render the title text onto a surface
+    title = font.render("Game Over", True, RED)
+
+    # Blit the title surface onto the screen, centered horizontally and at 1/4th height
+    screen.blit(title, (WIDTH / 2 - title.get_width() / 2, HEIGHT / 4))
+
+    # Define the buttons with their text and colors
+    buttons = [
+        ("Restart", GREEN),
+        ("Exit", BLUE)
+    ]
+
+    # Set the initial y-coordinate for the first button
+    button_y = HEIGHT / 2
+
+    # Draw each button on the screen
+    for text, color in buttons:
+        draw_button(screen, text, WIDTH / 2 - BUTTON_WIDTH / 2, button_y, BUTTON_WIDTH, BUTTON_HEIGHT, color, WHITE)
+        # Move the y-coordinate down for the next button
+        button_y += BUTTON_HEIGHT + BUTTON_PADDING
+
+    # Update the display to show the buttons and title
+    pygame.display.flip()
+
+    # Event loop to handle user interactions
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # If the quit event is triggered, return "exit"
+                return "exit"
+            if event.type == pygame.MOUSEBUTTONDOWN:  # If the mouse button is pressed
+                mouse_pos = pygame.mouse.get_pos()  # Get the position of the mouse click
+                button_y = HEIGHT / 2  # Reset the y-coordinate for button checking
+                for text, _ in buttons:
+                    # Create a rectangle for the current button
+                    button_rect = pygame.Rect(WIDTH / 2 - BUTTON_WIDTH / 2, button_y, BUTTON_WIDTH, BUTTON_HEIGHT)
+                    # Check if the mouse click is within the button rectangle
+                    if button_rect.collidepoint(mouse_pos):
+                        if text == "Restart":  # If the "Start" button is clicked, return "start"
+                            return "start"
+                        elif text == "Exit":  # If the "Exit" button is clicked, return "exit"
+                            return "exit"
+                    # Move the y-coordinate down for the next button
+                    button_y += BUTTON_HEIGHT + BUTTON_PADDING

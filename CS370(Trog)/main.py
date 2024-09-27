@@ -9,7 +9,7 @@ Functions:
 import random
 import pygame
 import math
-from ui import draw_background, initialize_background_images, pause_game
+from ui import draw_background, initialize_background_images
 
 # Initialize Pygame
 pygame.init()
@@ -26,8 +26,10 @@ pygame.display.set_caption("Trogdor 2: Return of the Burninator")
 from entities import Trogdor, Peasant, Knight, Guardian, House
 from bosses import Merlin, Lancelot, DragonKing
 from powerups import select_power_up
-from utils import BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, ORANGE, PEASANT_SPAWN_PROBABILITY, RED, TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, WHITE, WIDTH, HEIGHT, BLACK, FPS, INITIAL_LIVES, YELLOW, draw_burnination_bar
-from ui import start_screen, boss_selection_screen, show_congratulations_screen
+from utils import (BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, ORANGE, PEASANT_SPAWN_PROBABILITY,
+                   RED, TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, WHITE, WIDTH, HEIGHT, BLACK, FPS, INITIAL_LIVES,
+                   YELLOW, draw_burnination_bar)
+from ui import start_screen, boss_selection_screen, show_congratulations_screen, pause_game, game_over
 
 # Initialize Pygame
 pygame.init()
@@ -89,7 +91,7 @@ def game_loop(screen):
             if pause_game(screen) == "exit":
                 running = False
                 
-        #User input for movement wasd and arrow keys
+        # User input for movement wasd and arrow keys
         if keys[pygame.K_UP] | keys[pygame.K_DOWN] | keys[pygame.K_LEFT] | keys[pygame.K_RIGHT]:
             trogdor.move(keys[pygame.K_RIGHT] - keys[pygame.K_LEFT],
                          keys[pygame.K_DOWN] - keys[pygame.K_UP])
@@ -130,7 +132,12 @@ def game_loop(screen):
                 trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                 trogdor.burnination_mode = False
                 if game_state['lives'] <= 0:
-                    return True  # Game over if no lives left
+                    if game_over(screen) == "exit": # If they select exit, exit game
+                        running = False
+                    else: # Else restart game from level 1
+                        game_state['level'] = 1
+                        game_state['lives'] = 3
+                        trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
                 
         # Check for collisions between Trogdor and knights
         for guardian in guardians:
@@ -141,7 +148,12 @@ def game_loop(screen):
                 trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                 trogdor.burnination_mode = False
                 if game_state['lives'] <= 0:
-                    return True  # End the game if no lives are left
+                    if game_over(screen) == "exit": # If they select exit, exit game
+                        running = False
+                    else: # Else restart game from level 1
+                        game_state['level'] = 1
+                        game_state['lives'] = 3
+                        trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
         
         # Check for collisions between Trogdor and houses
         for house in houses[:]:
@@ -174,7 +186,12 @@ def game_loop(screen):
                         trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                         trogdor.burnination_mode = False
                         if game_state['lives'] <= 0:
-                            return True  # Game over if no lives left
+                            if game_over(screen) == "exit": # If they select exit, exit game
+                                running = False
+                            else: # Else restart game from level 1
+                                game_state['level'] = 1
+                                game_state['lives'] = 3
+                                trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
 
             if (abs(trogdor.x - boss.x) < trogdor.size + boss.size and
                 abs(trogdor.y - boss.y) < trogdor.size + boss.size):
@@ -187,7 +204,12 @@ def game_loop(screen):
                         trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                         trogdor.burnination_mode = False
                         if game_state['lives'] <= 0:
-                            return True  # Game over if no lives left
+                            if game_over(screen) == "exit": # If they select exit, exit game
+                                running = False
+                            else: # Else restart game from level 1
+                                game_state['level'] = 1
+                                game_state['lives'] = 3
+                                trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
                 else:
                     boss.take_damage()
 
@@ -214,7 +236,12 @@ def game_loop(screen):
                 trogdor.burnination_mode = False
                 projectiles.remove(projectile)
                 if game_state['lives'] <= 0:
-                    return True  # Game over if no lives left
+                    if game_over(screen) == "exit": # If they select exit, exit game
+                        running = False
+                    else: # Else restart game from level 1
+                        game_state['level'] = 1
+                        game_state['lives'] = 3
+                        trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
         
         trogdor.update()
         

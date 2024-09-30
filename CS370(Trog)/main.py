@@ -11,6 +11,7 @@ import pygame
 import math
 from ui import draw_background, initialize_background_images
 
+
 # Initialize Pygame
 pygame.init()
 
@@ -23,7 +24,7 @@ WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Trogdor 2: Return of the Burninator")
 
-from entities import Trogdor, Peasant, Knight, House
+from entities import Lancer, Trogdor, Peasant, Knight, House
 from bosses import Merlin, Lancelot, DragonKing
 from powerups import select_power_up
 from utils import BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, ORANGE, PEASANT_SPAWN_PROBABILITY, RED, TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, WHITE, WIDTH, HEIGHT, BLACK, FPS, INITIAL_LIVES, YELLOW, draw_burnination_bar
@@ -42,6 +43,7 @@ def initialize_game(level):
     houses = [House() for _ in range(level + 2)] if level not in [5, 10] else []
     peasants = [] if level not in [5, 10] else []
     knights = [Knight() for _ in range(min(level, 5))] if level not in [5, 10] else []
+    lancers = [Lancer() for _ in range(max(1, level // 3))]
     boss = None
     projectiles = []
 
@@ -50,7 +52,7 @@ def initialize_game(level):
     elif level == 10:
         boss = DragonKing()
 
-    return trogdor, houses, peasants, knights, boss, projectiles
+    return trogdor, houses, peasants, knights, boss, projectiles, lancers
 
 def game_loop(screen):
     # Initialize game state
@@ -63,7 +65,7 @@ def game_loop(screen):
     }
     
     # Initialize game objects
-    trogdor, houses, peasants, knights, boss, projectiles = initialize_game(game_state['level'])
+    trogdor, houses, peasants, knights, boss, projectiles, lancers = initialize_game(game_state['level'])
     
     # Create a clock object to control the frame rate
     running = True
@@ -85,6 +87,10 @@ def game_loop(screen):
             peasant.move()
         for knight in knights:
             knight.move(trogdor)
+
+        for lancer in lancers:
+            lancer.move(trogdor)
+
         
         # Randomly spawn new peasants
         if random.random() < PEASANT_SPAWN_PROBABILITY and houses:
@@ -112,6 +118,17 @@ def game_loop(screen):
                 if game_state['lives'] <= 0:
                     return True  # Game over if no lives left
         
+         # Check for collisions with Trogdor
+        for lancer in lancers:
+            if (abs(trogdor.x - lancer.x) < trogdor.size and
+                abs(trogdor.y - lancer.y) < trogdor.size):
+                lives -= 1
+                trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                trogdor.burnination_mode = False
+                if lives <= 0:
+                    running = False  # End the game if no lives are left
+
+
         # Check for collisions between Trogdor and houses
         for house in houses[:]:
             if (abs(trogdor.x - house.x) < trogdor.size and
@@ -197,6 +214,10 @@ def game_loop(screen):
             peasant.draw(screen)
         for knight in knights:
             knight.draw(screen)
+
+        for lancer in lancers:
+            lancer.draw(screen)
+
         for projectile in projectiles:
             projectile.draw(screen)
         if boss:

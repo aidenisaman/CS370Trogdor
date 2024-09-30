@@ -14,6 +14,14 @@ import random
 import math
 from utils import HOUSE_HEALTH, HOUSE_SIZE, KNIGHT_CHASE_PROBABILITY, KNIGHT_DIRECTION_CHANGE_INTERVAL, KNIGHT_SIZE, KNIGHT_SPEED, MERLIN_PROJECTILE_SPEED, PEASANT_DIRECTION_CHANGE_INTERVAL, WIDTH, HEIGHT, RED, GREEN, BLUE, YELLOW, ORANGE, TROGDOR_SIZE, TROGDOR_SPEED, TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, PEASANT_SIZE, PEASANT_SPEED
 
+
+LANCER_SIZE = 30
+LANCER_SPEED = 1.25
+LANCER_DIRECTION_CHANGE_INTERVAL = 60
+TROGDOR_INITIAL_X = WIDTH // 2
+TROGDOR_INITIAL_Y = HEIGHT // 2
+WHITE = (255, 255, 255)
+
 class Trogdor:
     def __init__(self):
         # Initialize Trogdor's position, size, speed, and other attributes
@@ -102,6 +110,42 @@ class Knight:
     def draw(self, screen):
         # Draw Knight on the screen
         pygame.draw.rect(screen, BLUE, (self.x, self.y, self.size, self.size))
+
+class Lancer:
+    def __init__(self):
+        self.x = random.randint(0, WIDTH - LANCER_SIZE)
+        self.y = random.randint(0, HEIGHT - LANCER_SIZE)
+        self.size = LANCER_SIZE
+        self.speed = LANCER_SPEED
+        self.direction = None
+        self.moving = False
+
+    def move(self, trogdor):
+        if self.is_in_line_of_sight(trogdor):
+            self.set_direction(trogdor)
+            self.moving = True
+        else:
+            self.moving = False
+
+        if self.moving and self.direction is not None:
+            dx = math.cos(self.direction) * self.speed if self.direction in [0, math.pi] else 0
+            dy = math.sin(self.direction) * self.speed if self.direction in [math.pi / 2, -math.pi / 2] else 0
+            self.x = max(0, min(WIDTH - self.size, self.x + dx))
+            self.y = max(0, min(HEIGHT - self.size, self.y + dy))
+
+    def is_in_line_of_sight(self, trogdor):
+        return self.x == trogdor.x or self.y == trogdor.y
+
+    def set_direction(self, trogdor):
+        if self.x == trogdor.x:
+            self.direction = math.pi / 2 if trogdor.y > self.y else -math.pi / 2
+        elif self.y == trogdor.y:
+            self.direction = 0 if trogdor.x > self.x else math.pi
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, WHITE, (self.x, self.y, self.size, self.size))
+
+
 
 class House:
     def __init__(self):

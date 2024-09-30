@@ -24,11 +24,13 @@ WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Trogdor 2: Return of the Burninator")
 
-from entities import Lancer, Trogdor, Peasant, Knight, House
+from entities import Lancer, Trogdor, Peasant, Guardian, Knight, House
 from bosses import Merlin, Lancelot, DragonKing
 from powerups import select_power_up
-from utils import BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, ORANGE, PEASANT_SPAWN_PROBABILITY, RED, TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, WHITE, WIDTH, HEIGHT, BLACK, FPS, INITIAL_LIVES, YELLOW, draw_burnination_bar
-from ui import start_screen, boss_selection_screen, show_congratulations_screen
+from utils import (BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, ORANGE, PEASANT_SPAWN_PROBABILITY,
+                   RED, TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, WHITE, WIDTH, HEIGHT, BLACK, FPS, INITIAL_LIVES,
+                   YELLOW, draw_burnination_bar)
+from ui import start_screen, boss_selection_screen, show_congratulations_screen, pause_game, game_over
 
 # Initialize Pygame
 pygame.init()
@@ -43,6 +45,9 @@ def initialize_game(level):
     houses = [House() for _ in range(level + 2)] if level not in [5, 10] else []
     peasants = [] if level not in [5, 10] else []
     knights = [Knight() for _ in range(min(level, 5))] if level not in [5, 10] else []
+    guardians = []
+    for _ in range(level + 1) if level not in [5,10] else []:
+        guardians.append(Guardian(random.choice(houses)))
     lancers = [Lancer() for _ in range(max(1, level // 3))]
     boss = None
     projectiles = []
@@ -52,7 +57,7 @@ def initialize_game(level):
     elif level == 10:
         boss = DragonKing()
 
-    return trogdor, houses, peasants, knights, boss, projectiles, lancers
+    return trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles
 
 def game_loop(screen):
     # Initialize game state
@@ -65,7 +70,11 @@ def game_loop(screen):
     }
     
     # Initialize game objects
-    trogdor, houses, peasants, knights, boss, projectiles, lancers = initialize_game(game_state['level'])
+    trogdor, houses, peasants, knights, lancers, guardians, boss, projectiles = initialize_game(game_state['level'])
+    
+    # For circling with guardian
+    guardian_angle = 0
+
     
     # Create a clock object to control the frame rate
     running = True
@@ -77,17 +86,30 @@ def game_loop(screen):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False  # Exit the game loop if the window is closed
-
         # Handle player input
         keys = pygame.key.get_pressed()
-        trogdor.move(keys[pygame.K_RIGHT] - keys[pygame.K_LEFT], keys[pygame.K_DOWN] - keys[pygame.K_UP])
+
+        #Pause if escape is pressed
+        if keys[pygame.K_ESCAPE]:
+            if pause_game(screen) == "exit":
+                running = False
+                
+        # User input for movement wasd and arrow keys
+        if keys[pygame.K_UP] | keys[pygame.K_DOWN] | keys[pygame.K_LEFT] | keys[pygame.K_RIGHT]:
+            trogdor.move(keys[pygame.K_RIGHT] - keys[pygame.K_LEFT],
+                         keys[pygame.K_DOWN] - keys[pygame.K_UP])
+        elif keys[pygame.K_w] | keys[pygame.K_s] | keys[pygame.K_a] | keys[pygame.K_d]:
+            trogdor.move(keys[pygame.K_d] - keys[pygame.K_a],
+                        keys[pygame.K_s] - keys[pygame.K_w])
         
         # Move peasants and knights
         for peasant in peasants:
             peasant.move()
         for knight in knights:
             knight.move(trogdor)
-
+        for guardian in guardians:
+            guardian.move(guardian_angle)
+        guardian_angle += 0.0175 # Higer number makes smaller circle, lower wider circle
         for lancer in lancers:
             lancer.move(trogdor)
 
@@ -116,7 +138,28 @@ def game_loop(screen):
                 trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                 trogdor.burnination_mode = False
                 if game_state['lives'] <= 0:
-                    return True  # Game over if no lives left
+                    if game_over(screen) == "exit": # If they select exit, exit game
+                        running = False
+                    else: # Else restart game from level 1
+                        game_state['level'] = 1
+                        game_state['lives'] = 3
+                        trogdor, houses, peasants, knights, lancers, guardians, boss, projectiles = initialize_game(game_state['level'])
+                
+        # Check for collisions between Trogdor and knights
+        for guardian in guardians:
+            if (abs(trogdor.x - guardian.x) < trogdor.size and
+                abs(trogdor.y - guardian.y) < trogdor.size):
+                game_state['lives'] -= 1
+                trogdor.peasants_stomped = 0
+                trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                trogdor.burnination_mode = False
+                if game_state['lives'] <= 0:
+                    if game_over(screen) == "exit": # If they select exit, exit game
+                        running = False
+                    else: # Else restart game from level 1
+                        game_state['level'] = 1
+                        game_state['lives'] = 3
+                        trogdor, houses, peasants, knights, lancers, guardians, boss, projectiles = initialize_game(game_state['level'])        
         
          # Check for collisions with Trogdor
         for lancer in lancers:
@@ -125,9 +168,12 @@ def game_loop(screen):
                 lives -= 1
                 trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                 trogdor.burnination_mode = False
-                if lives <= 0:
-                    running = False  # End the game if no lives are left
-
+                if game_over(screen) == "exit": # If they select exit, exit game
+                    running = False
+                else: # Else restart game from level 1
+                    game_state['level'] = 1
+                    game_state['lives'] = 3
+                    trogdor, houses, peasants, knights, lancers, guardians, boss, projectiles = initialize_game(game_state['level'])        
 
         # Check for collisions between Trogdor and houses
         for house in houses[:]:
@@ -142,7 +188,7 @@ def game_loop(screen):
                             game_state['level'] += 1
                             game_state['burnination_threshold'] += 2
                             game_state['houses_crushed'] = 0
-                            trogdor, houses, peasants, knights, boss, projectiles = initialize_game(game_state['level'])
+                            trogdor, houses, peasants, knights, lancers, guardians, boss, projectiles = initialize_game(game_state['level'])
                             peasants.clear()
                             game_state = select_power_up(screen, trogdor, game_state)
         
@@ -160,7 +206,12 @@ def game_loop(screen):
                         trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                         trogdor.burnination_mode = False
                         if game_state['lives'] <= 0:
-                            return True  # Game over if no lives left
+                            if game_over(screen) == "exit": # If they select exit, exit game
+                                running = False
+                            else: # Else restart game from level 1
+                                game_state['level'] = 1
+                                game_state['lives'] = 3
+                                trogdor, houses, peasants, knights, lancers, guardians, boss, projectiles = initialize_game(game_state['level'])
 
             if (abs(trogdor.x - boss.x) < trogdor.size + boss.size and
                 abs(trogdor.y - boss.y) < trogdor.size + boss.size):
@@ -173,7 +224,12 @@ def game_loop(screen):
                         trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                         trogdor.burnination_mode = False
                         if game_state['lives'] <= 0:
-                            return True  # Game over if no lives left
+                            if game_over(screen) == "exit": # If they select exit, exit game
+                                running = False
+                            else: # Else restart game from level 1
+                                game_state['level'] = 1
+                                game_state['lives'] = 3
+                                trogdor, houses, peasants, knights, lancers, guardians, boss, projectiles = initialize_game(game_state['level'])
                 else:
                     boss.take_damage()
 
@@ -183,7 +239,7 @@ def game_loop(screen):
                     if game_state['level'] > 10:
                         show_congratulations_screen(screen)
                         return True  # Game completed
-                    trogdor, houses, peasants, knights, boss, projectiles = initialize_game(game_state['level'])
+                    trogdor, houses, peasants, knights, lancers, guardians, boss, projectiles = initialize_game(game_state['level'])
                     game_state = select_power_up(screen, trogdor, game_state)
         
         # Update projectiles
@@ -200,7 +256,12 @@ def game_loop(screen):
                 trogdor.burnination_mode = False
                 projectiles.remove(projectile)
                 if game_state['lives'] <= 0:
-                    return True  # Game over if no lives left
+                    if game_over(screen) == "exit": # If they select exit, exit game
+                        running = False
+                    else: # Else restart game from level 1
+                        game_state['level'] = 1
+                        game_state['lives'] = 3
+                        trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles = initialize_game(game_state['level'])
         
         trogdor.update()
         
@@ -214,6 +275,8 @@ def game_loop(screen):
             peasant.draw(screen)
         for knight in knights:
             knight.draw(screen)
+        for guardian in guardians:
+            guardian.draw(screen)
 
         for lancer in lancers:
             lancer.draw(screen)
@@ -275,7 +338,19 @@ def boss_practice(screen, boss_type):
 
         # Handle input
         keys = pygame.key.get_pressed()
-        trogdor.move(keys[pygame.K_RIGHT] - keys[pygame.K_LEFT], keys[pygame.K_DOWN] - keys[pygame.K_UP])
+
+        #Pause if escape is pressed
+        if keys[pygame.K_ESCAPE]:
+            if pause_game(screen) == "exit":
+                running = False
+
+        #User input for movement wasd and arrow keys
+        if keys[pygame.K_UP] | keys[pygame.K_DOWN] | keys[pygame.K_LEFT] | keys[pygame.K_RIGHT]:
+            trogdor.move(keys[pygame.K_RIGHT] - keys[pygame.K_LEFT],
+                         keys[pygame.K_DOWN] - keys[pygame.K_UP])
+        elif keys[pygame.K_w] | keys[pygame.K_s] | keys[pygame.K_a] | keys[pygame.K_d]:
+            trogdor.move(keys[pygame.K_d] - keys[pygame.K_a],
+                        keys[pygame.K_s] - keys[pygame.K_w])
 
         # Update game objects
         if isinstance(boss, Merlin):

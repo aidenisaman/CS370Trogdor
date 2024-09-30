@@ -12,7 +12,7 @@ Classes:
 import pygame
 import random
 import math
-from utils import HOUSE_HEALTH, HOUSE_SIZE, KNIGHT_CHASE_PROBABILITY, KNIGHT_DIRECTION_CHANGE_INTERVAL, KNIGHT_SIZE, KNIGHT_SPEED, MERLIN_PROJECTILE_SPEED, PEASANT_DIRECTION_CHANGE_INTERVAL, WIDTH, HEIGHT, RED, GREEN, BLUE, YELLOW, ORANGE, TROGDOR_SIZE, TROGDOR_SPEED, TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, PEASANT_SIZE, PEASANT_SPEED
+from utils import HOUSE_HEALTH, HOUSE_SIZE, KNIGHT_CHASE_PROBABILITY, KNIGHT_DIRECTION_CHANGE_INTERVAL, KNIGHT_SIZE, KNIGHT_SPEED, MERLIN_PROJECTILE_SPEED, PEASANT_DIRECTION_CHANGE_INTERVAL, WIDTH, HEIGHT, RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, TROGDOR_SIZE, TROGDOR_SPEED, TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, PEASANT_SIZE, PEASANT_SPEED
 
 
 LANCER_SIZE = 30
@@ -162,6 +162,24 @@ class House:
         health_bar_width = self.size * (self.health / HOUSE_HEALTH)
         pygame.draw.rect(screen, GREEN, (self.x, self.y - health_bar_height - 2, health_bar_width, health_bar_height))
 
+class Guardian:
+    def __init__(self, house):
+        #Intailize with house spawn, center being a house
+        self.x = house.x +5
+        self.y = house.y -50
+        self.size = KNIGHT_SIZE
+        self.speed = KNIGHT_SPEED - .25
+    
+    def move(self, angle):
+        #Circle a house
+        dx = math.cos(angle) * self.speed * 2.5
+        dy = math.sin(angle) * self.speed * 2.5
+        self.x = max(0, min(WIDTH - self.size, self.x + dx))
+        self.y = max(0, min(HEIGHT - self.size, self.y + dy))
+
+    def draw(self, screen):
+        #Draw guardian on screen
+        pygame.draw.rect(screen, PURPLE, (self.x, self.y, self.size, self.size))
 class Projectile:
     def __init__(self, x, y, angle, size):
         self.x = x

@@ -28,7 +28,7 @@ from bosses import Merlin, Lancelot, DragonKing
 from powerups import select_power_up
 from utils import (BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, ORANGE, PEASANT_SPAWN_PROBABILITY,
                    RED, TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, WHITE, WIDTH, HEIGHT, BLACK, FPS, INITIAL_LIVES,
-                   YELLOW, draw_burnination_bar)
+                   YELLOW,INITIAL_GAME_TIME, INITIAL_PEASANTS_KILLED, INITIAL_ENEMIES_KILLED ,INITIAL_BOSSES_KILLED, draw_burnination_bar)
 from ui import start_screen, boss_selection_screen, show_congratulations_screen, pause_game, game_over
 
 # Initialize Pygame
@@ -65,6 +65,13 @@ def game_loop(screen):
         'lives': INITIAL_LIVES,
         'burnination_threshold': INITIAL_BURNINATION_THRESHOLD,
         'burnination_duration': BURNINATION_DURATION
+    }
+
+    game_stats ={
+        'timeS' :INITIAL_GAME_TIME/FPS,
+        #'timeM': 
+        #'timeH':
+
     }
     
     # Initialize game objects
@@ -269,11 +276,13 @@ def game_loop(screen):
         peasants_text = font.render(f"Peasants: {trogdor.peasants_stomped}/{game_state['burnination_threshold']}", True, GREEN)
         houses_text = font.render(f"Houses: {game_state['houses_crushed']}/{game_state['level'] + 2}", True, YELLOW)
         level_text = font.render(f"Level: {game_state['level']}", True, WHITE)
+        time_text = font.render(f"Time: {game_stats['timeS']}",True ,WHITE)
         burnination_text = font.render("BURNINATION!" if trogdor.burnination_mode else "", True, ORANGE)
         screen.blit(lives_text, (10, 10))
         screen.blit(peasants_text, (10, 50))
         screen.blit(houses_text, (10, 90))
         screen.blit(level_text, (10, 130))
+        screen.blit(time_text,(10,550))
         screen.blit(burnination_text, (WIDTH // 2 - 100, 10))
         
         if boss:
@@ -285,6 +294,8 @@ def game_loop(screen):
         
         pygame.display.flip()
         clock.tick(FPS)
+        if clock.tick(FPS)%FPS:
+            game_stats['timeS'] += 1
     
     return False
 

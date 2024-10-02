@@ -73,6 +73,14 @@ def load_background_images():
             print(f"Failed to load {bg_type} background")
     return backgrounds
 
+def load_sound(filename): # Give sound file_name return the file_sound
+    file_location = find_data_file(filename) # Get the file
+    if file_location is None:
+        print(f'Cannot find sound: {filename}')
+        return None 
+    
+    return pygame.mixer.Sound(file_location)
+
 BACKGROUND_IMAGES = None
 
 def initialize_background_images():

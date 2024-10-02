@@ -29,15 +29,22 @@ from powerups import select_power_up
 from utils import (BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, ORANGE, PEASANT_SPAWN_PROBABILITY,
                    RED, TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, WHITE, WIDTH, HEIGHT, BLACK, FPS, INITIAL_LIVES,
                    YELLOW, draw_burnination_bar)
-from ui import start_screen, boss_selection_screen, show_congratulations_screen, pause_game, game_over
+from ui import start_screen, boss_selection_screen, show_congratulations_screen, pause_game, game_over, find_data_file
 
 # Initialize Pygame
 pygame.init()
+pygame.mixer.init()
 
 # Set up the display
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Trogdor 2: Return of the Burninator")
+
+# Play main theme music
+# TODO
+# Play bell noise 
+bell_noise_location = find_data_file('bell_noise.wav') # Get the file
+bell_noise = pygame.mixer.Sound(bell_noise_location) # Loads music file
 
 def initialize_game(level):
     trogdor = Trogdor()
@@ -69,7 +76,10 @@ def game_loop(screen):
     
     # Initialize game objects
     trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
-    
+
+    # Initialize level count to track the level without changing game_state['level']
+    level_cnt = 0
+
     # For circling with guardian
     guardian_angle = 0
 
@@ -83,6 +93,10 @@ def game_loop(screen):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False  # Exit the game loop if the window is closed
+            
+        if level_cnt < game_state['level']: # Start of every level play bell_noise
+            bell_noise.play()
+            level_cnt = game_state['level']
         # Handle player input
         keys = pygame.key.get_pressed()
 

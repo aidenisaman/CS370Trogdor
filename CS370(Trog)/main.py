@@ -28,7 +28,7 @@ from bosses import Merlin, Lancelot, DragonKing
 from powerups import select_power_up
 from utils import (BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, ORANGE, PEASANT_SPAWN_PROBABILITY,
                    RED, TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, WHITE, WIDTH, HEIGHT, BLACK, FPS, INITIAL_LIVES,
-                   YELLOW,INITIAL_GAME_TIME, INITIAL_PEASANTS_KILLED, INITIAL_ENEMIES_KILLED ,INITIAL_BOSSES_KILLED, draw_burnination_bar)
+                   YELLOW,GAME_TIME_F,GAME_TIME_S,GAME_TIME_M,GAME_TIME_H, draw_burnination_bar)
 from ui import start_screen, boss_selection_screen, show_congratulations_screen, pause_game, game_over
 
 # Initialize Pygame
@@ -68,9 +68,10 @@ def game_loop(screen):
     }
 
     game_stats ={
-        'timeS' :INITIAL_GAME_TIME/FPS,
-        #'timeM': 
-        #'timeH':
+        'timeF':0,
+        'timeS':0,
+        'timeM':0,
+        'timeH':0
 
     }
     
@@ -144,6 +145,11 @@ def game_loop(screen):
                     else: # Else restart game from level 1
                         game_state['level'] = 1
                         game_state['lives'] = 3
+                        #reset time variables
+                        game_stats['timeF'] = 0
+                        game_stats['timeS'] = 0
+                        game_stats['timeM'] = 0
+                        game_stats['timeH'] = 0
                         trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
                 
         # Check for collisions between Trogdor and knights
@@ -160,6 +166,11 @@ def game_loop(screen):
                     else: # Else restart game from level 1
                         game_state['level'] = 1
                         game_state['lives'] = 3
+                        #reset time variables
+                        game_stats['timeF'] = 0
+                        game_stats['timeS'] = 0
+                        game_stats['timeM'] = 0
+                        game_stats['timeH'] = 0
                         trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
         
         # Check for collisions between Trogdor and houses
@@ -177,7 +188,11 @@ def game_loop(screen):
                             game_state['houses_crushed'] = 0
                             trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
                             peasants.clear()
-                            game_state = select_power_up(screen, trogdor, game_state)
+                            # GAME_TIME_F =game_stats['timeF'] 
+                            # GAME_TIME_S =game_stats['timeS'] 
+                            # GAME_TIME_M =game_stats['timeM']
+                            # GAME_TIME_H =game_stats['timeH']
+                            game_state = select_power_up(screen, trogdor, game_state,game_stats['timeH'],game_stats['timeM'],game_stats['timeS'])
         
         # Handle boss logic
         if boss:
@@ -198,6 +213,11 @@ def game_loop(screen):
                             else: # Else restart game from level 1
                                 game_state['level'] = 1
                                 game_state['lives'] = 3
+                                #reset time variables
+                                game_stats['timeF'] = 0
+                                game_stats['timeS'] = 0
+                                game_stats['timeM'] = 0
+                                game_stats['timeH'] = 0
                                 trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
 
             if (abs(trogdor.x - boss.x) < trogdor.size + boss.size and
@@ -227,7 +247,7 @@ def game_loop(screen):
                         show_congratulations_screen(screen)
                         return True  # Game completed
                     trogdor, houses, peasants, knights, boss, projectiles = initialize_game(game_state['level'])
-                    game_state = select_power_up(screen, trogdor, game_state)
+                    game_state = select_power_up(screen, trogdor, game_state,int(game_stats['timeH']),game_stats['timeM'],game_stats['timeS'])
         
         # Update projectiles
         for projectile in projectiles[:]:
@@ -276,7 +296,7 @@ def game_loop(screen):
         peasants_text = font.render(f"Peasants: {trogdor.peasants_stomped}/{game_state['burnination_threshold']}", True, GREEN)
         houses_text = font.render(f"Houses: {game_state['houses_crushed']}/{game_state['level'] + 2}", True, YELLOW)
         level_text = font.render(f"Level: {game_state['level']}", True, WHITE)
-        time_text = font.render(f"Time: {game_stats['timeS']}",True ,WHITE)
+        time_text = font.render(f"Time: {game_stats['timeH']}:{game_stats['timeM']}:{game_stats['timeS']}",True ,WHITE)
         burnination_text = font.render("BURNINATION!" if trogdor.burnination_mode else "", True, ORANGE)
         screen.blit(lives_text, (10, 10))
         screen.blit(peasants_text, (10, 50))
@@ -294,120 +314,51 @@ def game_loop(screen):
         
         pygame.display.flip()
         clock.tick(FPS)
-        if clock.tick(FPS)%FPS:
-            game_stats['timeS'] += 1
+        #tracks the time based on the Frames per second, SHOULD BE GOOD FOR ANY FPS BUT I COULD BE WRONG
+        game_stats['timeF'] += 1
+        #frame to seconds
+        if game_stats['timeF'] >= FPS:
+            game_stats['timeS']+= 1
+            #GAME_TIME_S += 1
+            game_stats['timeF'] =0
+
+        #second to minutes
+        if game_stats['timeS'] >= 60:
+            game_stats['timeM'] += 1
+            game_stats['timeS'] =0
+        #minutes to hours
+        if game_stats['timeM'] >= 60:
+            game_stats['timeH']+= 1
+            game_stats['timeM']=0
+        
+        # seconds_per_tick = 1/FPS
+        # #fps (HOPEFULLY) being translated to fps
+        # if clock.tick(FPS)%60:
+        #    game_stats['timeF'] += 1
+        #    GAME_TIME_F += 1
+        # #Registering the second equivalent
+        # if game_stats['timeF']==60:
+        #     game_stats['timeS'] += 1
+        #     game_stats['timeF'] = 0
+        #     #GAME_TIME_S += 1
+        #    # GAME_TIME_F = 0
+        # #if a minute passes in seconds
+        # if game_stats['timeS']==60:
+        #     game_stats['timeM'] += 1
+        #     game_stats['timeS'] = 0
+        #     #GAME_TIME_M += 1
+        #     #GAME_TIME_S = 0  
+        # #if a Hour passes in minutes
+        # if game_stats['timeM']==60:
+        #     game_stats['timeH'] += 1
+        #     game_stats['timeM'] = 0 
+        #     #GAME_TIME_H += 1
+        #    # GAME_TIME_M =0 
+        
     
     return False
 
-#Boss Practice Mode                   
-def boss_practice(screen, boss_type):
-    print(f"Starting boss practice with {boss_type}")  # Debug print
-    
-    # Initialize game objects
-    trogdor = Trogdor()
-    boss = None
-    if boss_type == "merlin":
-        boss = Merlin()
-    elif boss_type == "lancelot":
-        boss = Lancelot()
-    elif boss_type == "dragonking":
-        boss = DragonKing()
-    projectiles = []
-    lives = INITIAL_LIVES
 
-    clock = pygame.time.Clock()
-    running = True
-
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return
-
-        # Handle input
-        keys = pygame.key.get_pressed()
-
-        #Pause if escape is pressed
-        if keys[pygame.K_ESCAPE]:
-            if pause_game(screen) == "exit":
-                running = False
-
-        #User input for movement wasd and arrow keys
-        if keys[pygame.K_UP] | keys[pygame.K_DOWN] | keys[pygame.K_LEFT] | keys[pygame.K_RIGHT]:
-            trogdor.move(keys[pygame.K_RIGHT] - keys[pygame.K_LEFT],
-                         keys[pygame.K_DOWN] - keys[pygame.K_UP])
-        elif keys[pygame.K_w] | keys[pygame.K_s] | keys[pygame.K_a] | keys[pygame.K_d]:
-            trogdor.move(keys[pygame.K_d] - keys[pygame.K_a],
-                        keys[pygame.K_s] - keys[pygame.K_w])
-
-        # Update game objects
-        if isinstance(boss, Merlin):
-            boss.update(trogdor, projectiles)
-        else:
-            boss.update(trogdor)
-
-        if isinstance(boss, DragonKing):
-            for fx, fy, _ in boss.fire_breath:
-                if (abs(trogdor.x + trogdor.size/2 - fx) < trogdor.size/2 + 5 and
-                    abs(trogdor.y + trogdor.size/2 - fy) < trogdor.size/2 + 5):
-                    lives -= 1
-                    trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
-                    if lives <= 0:
-                        return
-
-        # Check collisions
-        if (abs(trogdor.x - boss.x) < trogdor.size + boss.size and
-            abs(trogdor.y - boss.y) < trogdor.size + boss.size):
-            if isinstance(boss, Lancelot) and boss.state != "vulnerable":
-                lives -= 1
-                trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
-                if lives <= 0:
-                    return
-            else:
-                boss.take_damage()
-                if isinstance(boss, Lancelot):
-                    angle = math.atan2(trogdor.y - boss.y, trogdor.x - boss.x)
-                    trogdor.x += math.cos(angle) * 50
-                    trogdor.y += math.sin(angle) * 50
-
-        if boss.health <= 0:
-            print(f"Boss {boss_type} defeated!")  # Debug print
-            return
-
-        # Update projectiles
-        for projectile in projectiles[:]:
-            projectile.move()
-            if (projectile.x < 0 or projectile.x > WIDTH or
-                projectile.y < 0 or projectile.y > HEIGHT):
-                projectiles.remove(projectile)
-            elif (abs(trogdor.x + trogdor.size/2 - projectile.x) < trogdor.size/2 + projectile.size and
-                  abs(trogdor.y + trogdor.size/2 - projectile.y) < trogdor.size/2 + projectile.size):
-                lives -= 1
-                trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
-                projectiles.remove(projectile)
-                if lives <= 0:
-                    print("Game Over: Out of lives")  # Debug print
-                    return
-
-        # Draw everything
-        screen.fill(BLACK)
-        for projectile in projectiles:
-            projectile.draw(screen)
-        boss.draw(screen)
-        trogdor.draw(screen)
-
-        # Draw UI elements
-        font = pygame.font.Font(None, 36)
-        lives_text = font.render(f"Lives: {lives}", True, RED)
-        boss_text = font.render(f"BOSS: {type(boss).__name__}", True, RED)
-        boss_health_text = font.render(f"Boss Health: {boss.health}", True, RED)
-        screen.blit(lives_text, (10, 10))
-        screen.blit(boss_text, (WIDTH // 2 - boss_text.get_width() // 2, 10))
-        screen.blit(boss_health_text, (WIDTH - boss_health_text.get_width() - 10, 10))
-
-        pygame.display.flip()
-        clock.tick(FPS)
-
-    print("Exiting boss practice")  # Debug print
 
 def main():
     # Initialize Pygame
@@ -437,10 +388,6 @@ def main():
         if choice == "start":
             print("Starting game loop...")  # Debug print
             game_loop(screen)
-        elif choice == "boss":
-            boss_choice = boss_selection_screen(screen)
-            if boss_choice in ["merlin", "lancelot", "dragonking"]:
-                boss_practice(screen, boss_choice)
         elif choice == "exit":
             print("Exiting game...")  # Debug print
             running = False

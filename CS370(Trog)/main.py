@@ -29,7 +29,7 @@ from powerups import select_power_up
 from utils import (BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, ORANGE, PEASANT_SPAWN_PROBABILITY,
                    RED, TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, WHITE, WIDTH, HEIGHT, BLACK, FPS, INITIAL_LIVES,
                    YELLOW, draw_burnination_bar)
-from ui import start_screen, boss_selection_screen, show_congratulations_screen, pause_game, game_over, load_sound, load_music 
+from ui import start_screen, boss_selection_screen, show_congratulations_screen, pause_game, game_over, load_sound, play_music 
 
 # Initialize Pygame
 pygame.init()
@@ -41,9 +41,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Trogdor 2: Return of the Burninator")
 
 # Play main theme music
-load_music('battle_music.wav') # Boss Battle Loop #3 by Sirkoto51 -- https://freesound.org/s/443128/ -- License: Attribution 4.0
-pygame.mixer.music.set_volume(.5) # Set Volume 50%
-pygame.mixer_music.play(-1) # Plays music on loop
+play_music(0)
 # Load sounds to be used
 bell_noise = load_sound('bell_noise.wav') # Old Church Bell (no noise) by igroglaz -- https://freesound.org/s/633208/ -- License: Creative Commons 0
 splat_noise = load_sound('splat.wav') # Splat and Crunch by FoolBoyMedia -- https://freesound.org/s/237924/ -- License: Attribution NonCommercial 4.0
@@ -453,6 +451,7 @@ def main():
         
         if choice == "start":
             print("Starting game loop...")  # Debug print
+            play_music(0)
             game_loop(screen)
         elif choice == "boss":
             boss_choice = boss_selection_screen(screen)

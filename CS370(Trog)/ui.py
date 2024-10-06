@@ -89,6 +89,18 @@ def load_music(filename):
     
     return pygame.mixer_music.load(file_location)
 
+def play_music(SongNum):
+    pygame.mixer.music.stop() # Stops what ever is playing now
+    if SongNum == 0:
+        load_music('battle_music.wav') # Boss Battle Loop #3 by Sirkoto51 -- https://freesound.org/s/443128/ -- License: Attribution 4.0
+        pygame.mixer.music.set_volume(.2) # Set Volume 50%
+        pygame.mixer_music.play(-1) # Plays music on loop
+    elif SongNum == 1:
+        load_music('mainmenu_music.wav') # Castle Music Loop #1 by Sirkoto51 -- https://freesound.org/s/416632/ -- License: Attribution 4.0
+        pygame.mixer.music.set_volume(.2) # Set Volume 50%
+        pygame.mixer_music.play(-1) # Plays music on loop
+    return
+
 BACKGROUND_IMAGES = None
 
 def initialize_background_images():
@@ -140,6 +152,7 @@ def draw_button(screen, text, x, y, width, height, color, text_color):
 
 def start_screen(screen):
     # Create a font object for the title
+    play_music(1) # Starts main theme
     title_font = pygame.font.Font(None, MENU_FONT_SIZE * 3 // 2)  # Slightly smaller than before to fit
     subtitle_font = pygame.font.Font(None, MENU_FONT_SIZE)
     
@@ -247,6 +260,7 @@ def show_congratulations_screen(screen):
 def pause_game(screen):
     # Pause game function triggered on pressing escape
     # Displays that game is paused and how to continue
+    play_music(1) # Plays menu theme
 
     # Create a font object for the title with double the menu font size
     font = pygame.font.Font(None, MENU_FONT_SIZE * 2)
@@ -289,6 +303,7 @@ def pause_game(screen):
                     # Check if the mouse click is within the button rectangle
                     if button_rect.collidepoint(mouse_pos):
                         if text == "Resume":  # If the "Start" button is clicked, return "start"
+                            play_music(0)
                             return "start"
                         elif text == "Exit":  # If the "Exit" button is clicked, return "exit"
                             return "exit"
@@ -298,6 +313,7 @@ def pause_game(screen):
 def game_over(screen):
     # game_over function triggered when lives == 0
     # Displays that game is over and whether to restart or quit
+    # TODO get game over music
 
     # Create a font object for the title with double the menu font size
     font = pygame.font.Font(None, MENU_FONT_SIZE * 2)
@@ -340,6 +356,7 @@ def game_over(screen):
                     # Check if the mouse click is within the button rectangle
                     if button_rect.collidepoint(mouse_pos):
                         if text == "Restart":  # If the "Start" button is clicked, return "start"
+                            play_music(0)
                             return "start"
                         elif text == "Exit":  # If the "Exit" button is clicked, return "exit"
                             return "exit"

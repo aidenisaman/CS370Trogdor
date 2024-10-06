@@ -42,8 +42,14 @@ pygame.display.set_caption("Trogdor 2: Return of the Burninator")
 
 # Play main theme music
 # TODO
-# Play bell noise 
+# Load sounds to be used
 bell_noise = load_sound('bell_noise.wav') # Loads music file
+splat_noise = load_sound('splat.wav')
+slash_noise = load_sound('slash.wav')
+# Adjust volume
+bell_noise.set_volume(1)
+splat_noise.set_volume(.25)
+slash_noise.set_volume(.25)
 
 def initialize_game(level):
     trogdor = Trogdor()
@@ -130,6 +136,7 @@ def game_loop(screen):
         for peasant in peasants[:]:
             if (abs(trogdor.x - peasant.x) < trogdor.size and
                 abs(trogdor.y - peasant.y) < trogdor.size):
+                splat_noise.play()
                 peasants.remove(peasant)
                 trogdor.peasants_stomped += 1
                 if trogdor.peasants_stomped >= game_state['burnination_threshold'] and not trogdor.burnination_mode:
@@ -141,6 +148,7 @@ def game_loop(screen):
         for knight in knights:
             if (abs(trogdor.x - knight.x) < trogdor.size and
                 abs(trogdor.y - knight.y) < trogdor.size):
+                slash_noise.play()
                 game_state['lives'] -= 1
                 trogdor.peasants_stomped = 0
                 trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
@@ -157,6 +165,7 @@ def game_loop(screen):
         for guardian in guardians:
             if (abs(trogdor.x - guardian.x) < trogdor.size and
                 abs(trogdor.y - guardian.y) < trogdor.size):
+                slash_noise.play()
                 game_state['lives'] -= 1
                 trogdor.peasants_stomped = 0
                 trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
@@ -195,6 +204,7 @@ def game_loop(screen):
                 for fx, fy, _ in boss.fire_breath:
                     if (abs(trogdor.x + trogdor.size/2 - fx) < trogdor.size/2 + 5 and
                         abs(trogdor.y + trogdor.size/2 - fy) < trogdor.size/2 + 5):
+                        slash_noise.play()
                         game_state['lives'] -= 1
                         trogdor.peasants_stomped = 0
                         trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
@@ -213,6 +223,7 @@ def game_loop(screen):
                     if boss.state == "vulnerable":
                         boss.take_damage()
                     elif boss.state == "charging":
+                        slash_noise.play()
                         game_state['lives'] -= 1
                         trogdor.peasants_stomped = 0
                         trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
@@ -244,6 +255,7 @@ def game_loop(screen):
                 projectiles.remove(projectile)
             elif (abs(trogdor.x + trogdor.size/2 - projectile.x) < trogdor.size/2 + projectile.size and
                   abs(trogdor.y + trogdor.size/2 - projectile.y) < trogdor.size/2 + projectile.size):
+                slash_noise.play()
                 game_state['lives'] -= 1
                 trogdor.peasants_stomped = 0
                 trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y

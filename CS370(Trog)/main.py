@@ -364,6 +364,7 @@ def boss_practice(screen, boss_type):
             for fx, fy, _ in boss.fire_breath:
                 if (abs(trogdor.x + trogdor.size/2 - fx) < trogdor.size/2 + 5 and
                     abs(trogdor.y + trogdor.size/2 - fy) < trogdor.size/2 + 5):
+                    slash_noise.play()
                     lives -= 1
                     trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                     if lives <= 0:
@@ -373,6 +374,7 @@ def boss_practice(screen, boss_type):
         if (abs(trogdor.x - boss.x) < trogdor.size + boss.size and
             abs(trogdor.y - boss.y) < trogdor.size + boss.size):
             if isinstance(boss, Lancelot) and boss.state != "vulnerable":
+                slash_noise.play()
                 lives -= 1
                 trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                 if lives <= 0:
@@ -396,6 +398,7 @@ def boss_practice(screen, boss_type):
                 projectiles.remove(projectile)
             elif (abs(trogdor.x + trogdor.size/2 - projectile.x) < trogdor.size/2 + projectile.size and
                   abs(trogdor.y + trogdor.size/2 - projectile.y) < trogdor.size/2 + projectile.size):
+                slash_noise.play()
                 lives -= 1
                 trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                 projectiles.remove(projectile)

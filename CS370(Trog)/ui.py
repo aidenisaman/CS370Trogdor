@@ -91,11 +91,11 @@ def load_music(filename):
 
 def play_music(SongNum):
     pygame.mixer.music.stop() # Stops what ever is playing now
-    if SongNum == 0:
+    if SongNum == 1:
         load_music('battle_music.wav') # Boss Battle Loop #3 by Sirkoto51 -- https://freesound.org/s/443128/ -- License: Attribution 4.0
         pygame.mixer.music.set_volume(.2) # Set Volume 50%
         pygame.mixer_music.play(-1) # Plays music on loop
-    elif SongNum == 1:
+    elif SongNum == 0:
         load_music('mainmenu_music.wav') # Castle Music Loop #1 by Sirkoto51 -- https://freesound.org/s/416632/ -- License: Attribution 4.0
         pygame.mixer.music.set_volume(.2) # Set Volume 50%
         pygame.mixer_music.play(-1) # Plays music on loop

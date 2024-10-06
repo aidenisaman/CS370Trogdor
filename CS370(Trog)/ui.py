@@ -81,6 +81,14 @@ def load_sound(filename): # Give sound file_name return the file_sound
     
     return pygame.mixer.Sound(file_location)
 
+def load_music(filename):
+    file_location = find_data_file(filename) # Get the file
+    if file_location is None:
+        print(f'Cannot find sound: {filename}')
+        return None 
+    
+    return pygame.mixer_music.load(file_location)
+
 BACKGROUND_IMAGES = None
 
 def initialize_background_images():

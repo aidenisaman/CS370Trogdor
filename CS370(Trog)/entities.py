@@ -110,13 +110,13 @@ class Knight:
 
 class Lancer:
     def __init__(self):
-        self.x = random.randint(0, WIDTH)
-        self.y = random.randint(0, HEIGHT)
-        self.size = 50
-        self.speed = 5
+        self.x = random.randint(0, WIDTH - TROGDOR_INITIAL_X)
+        self.y = random.randint(0, HEIGHT - TROGDOR_INITIAL_Y)
+        self.size = KNIGHT_SIZE * 1.5
+        self.speed = 7
         self.direction = None
         self.moving = False
-        self.range = 50
+        self.range = KNIGHT_SIZE * 1.5
 
     def is_in_line_of_sight(self, trogdor):
         return abs(self.x - trogdor.x) <= self.range or abs(self.y - trogdor.y) <= self.range

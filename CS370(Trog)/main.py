@@ -60,7 +60,7 @@ def initialize_game(level):
 def game_loop(screen):
     # Initialize game state
     game_state = {
-        'level': 5,
+        'level': 1,
         'houses_crushed': 0,
         'lives': INITIAL_LIVES,
         'burnination_threshold': INITIAL_BURNINATION_THRESHOLD,

@@ -142,8 +142,7 @@ def start_screen(screen):
     # Define the buttons with their text and colors
     buttons = [
         ("Start", GREEN),
-        ("Boss Practice", RED),
-        ("Exit", BLUE)
+        ("Exit", BLUE),
     ]
 
     # Set the initial y-coordinate for the first button
@@ -171,45 +170,10 @@ def start_screen(screen):
                     if button_rect.collidepoint(mouse_pos):
                         if text == "Start":
                             return "start"
-                        elif text == "Boss Practice":
-                            return "boss"
                         elif text == "Exit":
                             return "exit"
                     button_y += BUTTON_HEIGHT + BUTTON_PADDING
 
-#Boss Selection Menu
-def boss_selection_screen(screen):
-    screen.fill(BLACK)
-    font = pygame.font.Font(None, MENU_FONT_SIZE)
-    title = font.render("Select a Boss", True, WHITE)
-    screen.blit(title, (WIDTH/2 - title.get_width()/2, HEIGHT/4))
-
-    buttons = [
-        ("Merlin", BLUE),
-        ("Lancelot", RED),
-        ("Dragon King", ORANGE),
-        ("Back", GREEN)
-    ]
-
-    button_y = HEIGHT/2
-    for text, color in buttons:
-        draw_button(screen, text, WIDTH/2 - BUTTON_WIDTH/2, button_y, BUTTON_WIDTH, BUTTON_HEIGHT, color, WHITE)
-        button_y += BUTTON_HEIGHT + BUTTON_PADDING
-
-    pygame.display.flip()
-
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return "exit"
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
-                button_y = HEIGHT/2
-                for text, _ in buttons:
-                    button_rect = pygame.Rect(WIDTH/2 - BUTTON_WIDTH/2, button_y, BUTTON_WIDTH, BUTTON_HEIGHT)
-                    if button_rect.collidepoint(mouse_pos):
-                        return text.lower().replace(" ", "")
-                    button_y += BUTTON_HEIGHT + BUTTON_PADDING
 
 def show_congratulations_screen(screen):
     screen.fill(BLACK)

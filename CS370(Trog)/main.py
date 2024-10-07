@@ -8,7 +8,7 @@ Functions:
  """
 import random
 import pygame
-import math
+
 from ui import draw_background, initialize_background_images
 
 # Initialize Pygame
@@ -29,7 +29,7 @@ from powerups import select_power_up
 from utils import (BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, ORANGE, PEASANT_SPAWN_PROBABILITY,
                    RED, TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, WHITE, WIDTH, HEIGHT, BLACK, FPS, INITIAL_LIVES,
                    YELLOW,GAME_TIME_F,GAME_TIME_S,GAME_TIME_M,GAME_TIME_H, draw_burnination_bar)
-from ui import start_screen, boss_selection_screen, show_congratulations_screen, pause_game, game_over
+from ui import start_screen, show_congratulations_screen, pause_game, game_over
 
 # Initialize Pygame
 pygame.init()
@@ -51,7 +51,7 @@ def initialize_game(level):
     projectiles = []
 
     if level == 5:
-        boss = random.choice([Merlin(), Lancelot()])
+        boss = random.choice([Merlin()])#lancelot is not wokring in code atm a
     elif level == 10:
         boss = DragonKing()
 
@@ -60,7 +60,7 @@ def initialize_game(level):
 def game_loop(screen):
     # Initialize game state
     game_state = {
-        'level': 1,
+        'level': 5,
         'houses_crushed': 0,
         'lives': INITIAL_LIVES,
         'burnination_threshold': INITIAL_BURNINATION_THRESHOLD,
@@ -330,32 +330,7 @@ def game_loop(screen):
         if game_stats['timeM'] >= 60:
             game_stats['timeH']+= 1
             game_stats['timeM']=0
-        
-        # seconds_per_tick = 1/FPS
-        # #fps (HOPEFULLY) being translated to fps
-        # if clock.tick(FPS)%60:
-        #    game_stats['timeF'] += 1
-        #    GAME_TIME_F += 1
-        # #Registering the second equivalent
-        # if game_stats['timeF']==60:
-        #     game_stats['timeS'] += 1
-        #     game_stats['timeF'] = 0
-        #     #GAME_TIME_S += 1
-        #    # GAME_TIME_F = 0
-        # #if a minute passes in seconds
-        # if game_stats['timeS']==60:
-        #     game_stats['timeM'] += 1
-        #     game_stats['timeS'] = 0
-        #     #GAME_TIME_M += 1
-        #     #GAME_TIME_S = 0  
-        # #if a Hour passes in minutes
-        # if game_stats['timeM']==60:
-        #     game_stats['timeH'] += 1
-        #     game_stats['timeM'] = 0 
-        #     #GAME_TIME_H += 1
-        #    # GAME_TIME_M =0 
-        
-    
+
     return False
 
 

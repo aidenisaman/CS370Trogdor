@@ -23,7 +23,7 @@ WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Trogdor 2: Return of the Burninator")
 
-from entities import Trogdor, Peasant, Knight, Guardian, House
+from entities import Trogdor, Peasant, Knight, Guardian, Lancer, House
 from bosses import Merlin, Lancelot, DragonKing
 from powerups import select_power_up
 from utils import (BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, ORANGE, PEASANT_SPAWN_PROBABILITY,
@@ -47,6 +47,7 @@ def initialize_game(level):
     guardians = []
     for _ in range(level + 1) if level not in [5,10] else []:
         guardians.append(Guardian(random.choice(houses)))
+    lancers = [Lancer()for _ in range(min(level, 5))] if level not in [5, 10] else []
     boss = None
     projectiles = []
 
@@ -55,7 +56,7 @@ def initialize_game(level):
     elif level == 10:
         boss = DragonKing()
 
-    return trogdor, houses, peasants, knights, guardians, boss, projectiles
+    return trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles
 
 def game_loop(screen):
     # Initialize game state
@@ -68,7 +69,7 @@ def game_loop(screen):
     }
     
     # Initialize game objects
-    trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
+    trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles = initialize_game(game_state['level'])
     
     # For circling with guardian
     guardian_angle = 0
@@ -104,10 +105,15 @@ def game_loop(screen):
             peasant.move()
         for knight in knights:
             knight.move(trogdor)
+
         for guardian in guardians:
             guardian.move(guardian_angle)
         guardian_angle += 0.0175 # Higer number makes smaller circle, lower wider circle
         
+        for lancer in lancers:
+            lancer.move(trogdor)
+
+       
         # Randomly spawn new peasants
         if random.random() < PEASANT_SPAWN_PROBABILITY and houses:
             peasants.append(Peasant(random.choice(houses)))
@@ -137,9 +143,7 @@ def game_loop(screen):
                     else: # Else restart game from level 1
                         game_state['level'] = 1
                         game_state['lives'] = 3
-                        trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
-                
-        # Check for collisions between Trogdor and knights
+                        trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles = initialize_game(game_state['level'])
         for guardian in guardians:
             if (abs(trogdor.x - guardian.x) < trogdor.size and
                 abs(trogdor.y - guardian.y) < trogdor.size):
@@ -153,8 +157,25 @@ def game_loop(screen):
                     else: # Else restart game from level 1
                         game_state['level'] = 1
                         game_state['lives'] = 3
-                        trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
+                        trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles = initialize_game(game_state['level'])
         
+        for lancer in lancers:
+            if (abs(trogdor.x - lancer.x ) < trogdor.size and
+                abs(trogdor.y - lancer.y) < trogdor.size):
+                game_state['lives'] -= 1
+                trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                trogdor.peasants_stomped = 0
+                trogdor.burnination_mode = False
+                if game_state['lives'] <= 0:
+                     if game_over(screen) == "exit": # If they select exit, exit game
+                        running = False
+                     else:
+                        game_state['level'] = 1
+                        game_state['lives'] = 3
+                        trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles = initialize_game(game_state['level'])
+        
+        # Check for collisions between Trogdor and knights
+     
         # Check for collisions between Trogdor and houses
         for house in houses[:]:
             if (abs(trogdor.x - house.x) < trogdor.size and
@@ -168,7 +189,7 @@ def game_loop(screen):
                             game_state['level'] += 1
                             game_state['burnination_threshold'] += 2
                             game_state['houses_crushed'] = 0
-                            trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
+                            trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles = initialize_game(game_state['level'])
                             peasants.clear()
                             game_state = select_power_up(screen, trogdor, game_state)
         
@@ -191,7 +212,7 @@ def game_loop(screen):
                             else: # Else restart game from level 1
                                 game_state['level'] = 1
                                 game_state['lives'] = 3
-                                trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
+                                trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles = initialize_game(game_state['level'])
 
             if (abs(trogdor.x - boss.x) < trogdor.size + boss.size and
                 abs(trogdor.y - boss.y) < trogdor.size + boss.size):
@@ -209,7 +230,7 @@ def game_loop(screen):
                             else: # Else restart game from level 1
                                 game_state['level'] = 1
                                 game_state['lives'] = 3
-                                trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
+                                trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles = initialize_game(game_state['level'])
                 else:
                     boss.take_damage()
 
@@ -241,7 +262,7 @@ def game_loop(screen):
                     else: # Else restart game from level 1
                         game_state['level'] = 1
                         game_state['lives'] = 3
-                        trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
+                        trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles = initialize_game(game_state['level'])
         
         trogdor.update()
         
@@ -254,9 +275,13 @@ def game_loop(screen):
         for peasant in peasants:
             peasant.draw(screen)
         for knight in knights:
-            knight.draw(screen)
+            knight.draw(screen)            
+            
         for guardian in guardians:
             guardian.draw(screen)
+
+        for lancer in lancers:
+            lancer.draw(screen)
         for projectile in projectiles:
             projectile.draw(screen)
         if boss:

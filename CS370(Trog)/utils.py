@@ -76,6 +76,16 @@ POWER_UP_DURATION_MULTIPLIER = 1.5
 POWER_UP_SPEED_BOOST = 2
 POWER_UP_EXTRA_LIFE = 1
 
+# In game trackers
+GAME_TIME_F = 0
+GAME_TIME_S = 0
+GAME_TIME_M = 0
+GAME_TIME_H = 0
+PEASANTS_KILLED = 0
+ENEMIES_KILLED = 0
+BOSSES_KILLED = 0
+
+
 def draw_burnination_bar(screen, trogdor, burnination_duration):
     # Draw the burnination bar on the screen
     bar_width = 200

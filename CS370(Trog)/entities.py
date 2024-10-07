@@ -77,10 +77,16 @@ class Knight:
         self.direction = random.uniform(0, 2 * math.pi)
         self.move_timer = 0
         self.chasing = False
+        self.chase_start_time = 0  #Timer for chasing behavior
 
     def move(self, trogdor):
         # Move Knight, chasing Trogdor if close enough
         self.move_timer += 1
+        current_time = pygame.time.get_ticks()  # Get current time
+
+        if self.chasing and current_time - self.chase_start_time > 5000:  # 5000 ms = 5 seconds
+            self.chasing = False  # Stop chasing after 5 seconds
+
         if self.move_timer > KNIGHT_DIRECTION_CHANGE_INTERVAL or self.chasing:
             if random.random() < KNIGHT_CHASE_PROBABILITY or self.chasing:
                 self.chase(trogdor)
@@ -95,7 +101,9 @@ class Knight:
 
     def chase(self, trogdor):
         # Set Knight's direction towards Trogdor
-        self.chasing = True
+        if not self.chasing:
+            self.chasing = True
+            self.chase_start_time = pygame.time.get_ticks()  # Start the chase timer
         angle = math.atan2(trogdor.y - self.y, trogdor.x - self.x)
         self.direction = angle
 

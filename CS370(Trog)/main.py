@@ -28,7 +28,7 @@ from powerups import select_power_up
 from utils import (BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, ORANGE, PEASANT_SPAWN_PROBABILITY,
                    RED, TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, WHITE, WIDTH, HEIGHT, BLACK, FPS, INITIAL_LIVES,
                    YELLOW, draw_burnination_bar)
-from ui import start_screen, boss_selection_screen, show_congratulations_screen, pause_game, game_over, load_sound, play_music 
+from ui import start_screen, show_congratulations_screen, pause_game, game_over, load_sound, play_music 
 
 
 # Initialize Pygame
@@ -217,7 +217,7 @@ def game_loop(screen):
 
             if (abs(trogdor.x - boss.x) < trogdor.size + boss.size and
                 abs(trogdor.y - boss.y) < trogdor.size + boss.size):
-AidenW
+
                 boss.take_damage()
 
 

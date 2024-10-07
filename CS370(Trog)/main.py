@@ -28,15 +28,26 @@ from powerups import select_power_up
 from utils import (BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, ORANGE, PEASANT_SPAWN_PROBABILITY,
                    RED, TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, WHITE, WIDTH, HEIGHT, BLACK, FPS, INITIAL_LIVES,
                    YELLOW, draw_burnination_bar)
-from ui import start_screen, show_congratulations_screen, pause_game, game_over
+from ui import start_screen, boss_selection_screen, show_congratulations_screen, pause_game, game_over, load_sound, play_music 
+
 
 # Initialize Pygame
 pygame.init()
+pygame.mixer.init()
 
 # Set up the display
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Trogdor 2: Return of the Burninator")
+
+# Load sounds to be used
+bell_noise = load_sound('bell_noise.wav') # Old Church Bell (no noise) by igroglaz -- https://freesound.org/s/633208/ -- License: Creative Commons 0
+splat_noise = load_sound('splat.wav') # Splat and Crunch by FoolBoyMedia -- https://freesound.org/s/237924/ -- License: Attribution NonCommercial 4.0
+slash_noise = load_sound('slash.wav') # Slash - Rpg by colorsCrimsonTears -- https://freesound.org/s/580307/ -- License: Creative Commons 0
+# Adjust volume
+bell_noise.set_volume(1)
+splat_noise.set_volume(.25)
+slash_noise.set_volume(.25)
 
 def initialize_game(level):
     trogdor = Trogdor()
@@ -68,7 +79,10 @@ def game_loop(screen):
     
     # Initialize game objects
     trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
-    
+
+    # Initialize level count to track the level without changing game_state['level']
+    level_cnt = 0
+
     # For circling with guardian
     guardian_angle = 0
 
@@ -82,6 +96,11 @@ def game_loop(screen):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False  # Exit the game loop if the window is closed
+        # Start of every level play bell_noise    
+        if level_cnt < game_state['level']: 
+            bell_noise.play()
+            level_cnt = game_state['level']
+
         # Handle player input
         keys = pygame.key.get_pressed()
 
@@ -115,6 +134,7 @@ def game_loop(screen):
         for peasant in peasants[:]:
             if (abs(trogdor.x - peasant.x) < trogdor.size and
                 abs(trogdor.y - peasant.y) < trogdor.size):
+                splat_noise.play()
                 peasants.remove(peasant)
                 trogdor.peasants_stomped += 1
                 if trogdor.peasants_stomped >= game_state['burnination_threshold'] and not trogdor.burnination_mode:
@@ -126,6 +146,7 @@ def game_loop(screen):
         for knight in knights:
             if (abs(trogdor.x - knight.x) < trogdor.size and
                 abs(trogdor.y - knight.y) < trogdor.size):
+                slash_noise.play()
                 game_state['lives'] -= 1
                 trogdor.peasants_stomped = 0
                 trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
@@ -142,6 +163,7 @@ def game_loop(screen):
         for guardian in guardians:
             if (abs(trogdor.x - guardian.x) < trogdor.size and
                 abs(trogdor.y - guardian.y) < trogdor.size):
+                slash_noise.play()
                 game_state['lives'] -= 1
                 trogdor.peasants_stomped = 0
                 trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
@@ -180,6 +202,7 @@ def game_loop(screen):
                 for fx, fy, _ in boss.fire_breath:
                     if (abs(trogdor.x + trogdor.size/2 - fx) < trogdor.size/2 + 5 and
                         abs(trogdor.y + trogdor.size/2 - fy) < trogdor.size/2 + 5):
+                        slash_noise.play()
                         game_state['lives'] -= 1
                         trogdor.peasants_stomped = 0
                         trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
@@ -194,7 +217,9 @@ def game_loop(screen):
 
             if (abs(trogdor.x - boss.x) < trogdor.size + boss.size and
                 abs(trogdor.y - boss.y) < trogdor.size + boss.size):
+AidenW
                 boss.take_damage()
+
 
                 if boss.health <= 0:
                     boss = None
@@ -213,6 +238,7 @@ def game_loop(screen):
                 projectiles.remove(projectile)
             elif (abs(trogdor.x + trogdor.size/2 - projectile.x) < trogdor.size/2 + projectile.size and
                   abs(trogdor.y + trogdor.size/2 - projectile.y) < trogdor.size/2 + projectile.size):
+                slash_noise.play()
                 game_state['lives'] -= 1
                 trogdor.peasants_stomped = 0
                 trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
@@ -271,6 +297,7 @@ def game_loop(screen):
     
     return False
 
+
 def main():
     # Initialize Pygame
     pygame.init()
@@ -297,6 +324,10 @@ def main():
         print(f"User chose: {choice}")  # Debug print
         
         if choice == "start":
+
+            print("Starting game loop...")  # Debug print
+            play_music(0)
+
             game_loop(screen)
         elif choice == "exit":
             print("Exiting game...")  # Debug print

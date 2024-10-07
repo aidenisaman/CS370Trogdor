@@ -8,7 +8,7 @@ Functions:
  """
 import random
 import pygame
-
+import math
 from ui import draw_background, initialize_background_images
 
 # Initialize Pygame

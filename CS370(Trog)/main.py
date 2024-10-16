@@ -165,7 +165,6 @@ def game_loop(screen):
                     slash_noise.play()
                     game_state['lives'] -= 1
                     trogdor.peasants_stomped = 0
-                    trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                     spawn_time = game_stats['timeS']
                     trogdor.burnination_mode = False
                     if game_state['lives'] <= 0:
@@ -190,7 +189,6 @@ def game_loop(screen):
                     slash_noise.play()
                     game_state['lives'] -= 1
                     trogdor.peasants_stomped = 0
-                    trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                     spawn_time = game_stats['timeS']
                     trogdor.burnination_mode = False
                     if game_state['lives'] <= 0:
@@ -237,7 +235,6 @@ def game_loop(screen):
                             slash_noise.play()
                             game_state['lives'] -= 1
                             trogdor.peasants_stomped = 0
-                            trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                             spawn_time = game_stats['timeS']
                             trogdor.burnination_mode = False
                             if game_state['lives'] <= 0:
@@ -282,7 +279,6 @@ def game_loop(screen):
                     slash_noise.play()
                     game_state['lives'] -= 1
                     trogdor.peasants_stomped = 0
-                    trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                     spawn_time = game_stats['timeS']
                     trogdor.burnination_mode = False
                     projectiles.remove(projectile)

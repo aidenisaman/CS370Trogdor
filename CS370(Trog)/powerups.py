@@ -67,13 +67,13 @@ def select_power_up(screen, trogdor, game_state,hours,minutes,seconds):
                 pygame.quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
-                    game_state = chosen_power_ups[0].apply(trogdor, game_state)
+                    game_state = power_ups[0].apply(trogdor, game_state)
                     choosing = False
                 elif event.key == pygame.K_2:
-                    game_state = chosen_power_ups[1].apply(trogdor, game_state)
+                    game_state = power_ups[1].apply(trogdor, game_state)
                     choosing = False
                 elif event.key == pygame.K_3:
-                    game_state = chosen_power_ups[2].apply(trogdor, game_state)
+                    game_state = power_ups[2].apply(trogdor, game_state)
                     choosing = False
 
     return game_state

@@ -209,10 +209,6 @@ def game_loop(screen):
                             game_state['houses_crushed'] = 0
                             trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
                             peasants.clear()
-                            # GAME_TIME_F =game_stats['timeF'] 
-                            # GAME_TIME_S =game_stats['timeS'] 
-                            # GAME_TIME_M =game_stats['timeM']
-                            # GAME_TIME_H =game_stats['timeH']
                             game_state = select_power_up(screen, trogdor, game_state,game_stats['timeH'],game_stats['timeM'],game_stats['timeS'])
         
         # Handle boss logic
@@ -276,10 +272,13 @@ def game_loop(screen):
                     if game_over(screen) == "exit": # If they select exit, exit game
                         running = False
                     else: # Else restart game from level 1
-                        game_state['level'] = 1
-                        game_state['lives'] = 3
                         trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
         
+                        game_state['level'] = 1
+                        game_state['lives'] = 3
+                        game_state['burnination_threshold'] = 5
+                        game_state['houses_crushed'] = 0
+                        
         trogdor.update()
         
         # Drawing

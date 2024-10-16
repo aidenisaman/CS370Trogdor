@@ -71,7 +71,7 @@ def Is_Invulerable(current_time, spawn_time):
     if spawn_time + 2 < current_time: # If your spawn time + two seconds is less than current time invulerable
         return True
     return False
-    
+
 
 def game_loop(screen):
     # Initialize game state
@@ -158,6 +158,7 @@ def game_loop(screen):
                     trogdor.peasants_stomped = 0
         
         # Check for collisions between Trogdor and knights
+        if Is_Invulerable(game_stats['timeS'], spawn_time):
             for knight in knights:
                 if (abs(trogdor.x - knight.x) < trogdor.size and
                     abs(trogdor.y - knight.y) < trogdor.size):
@@ -165,6 +166,7 @@ def game_loop(screen):
                     game_state['lives'] -= 1
                     trogdor.peasants_stomped = 0
                     trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                    spawn_time = game_stats['timeS']
                     trogdor.burnination_mode = False
                     if game_state['lives'] <= 0:
                         if game_over(screen) == "exit": # If they select exit, exit game
@@ -179,8 +181,9 @@ def game_loop(screen):
                             game_stats['timeH'] = 0
                             spawn_time = 0
                             trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
-                
+                    
         # Check for collisions between Trogdor and knights
+        if Is_Invulerable(game_stats['timeS'], spawn_time):
             for guardian in guardians:
                 if (abs(trogdor.x - guardian.x) < trogdor.size and
                     abs(trogdor.y - guardian.y) < trogdor.size):
@@ -188,6 +191,7 @@ def game_loop(screen):
                     game_state['lives'] -= 1
                     trogdor.peasants_stomped = 0
                     trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                    spawn_time = game_stats['timeS']
                     trogdor.burnination_mode = False
                     if game_state['lives'] <= 0:
                         if game_over(screen) == "exit": # If they select exit, exit game
@@ -218,10 +222,6 @@ def game_loop(screen):
                             game_state['houses_crushed'] = 0
                             trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
                             peasants.clear()
-                            # GAME_TIME_F =game_stats['timeF'] 
-                            # GAME_TIME_S =game_stats['timeS'] 
-                            # GAME_TIME_M =game_stats['timeM']
-                            # GAME_TIME_H =game_stats['timeH']
                             game_state = select_power_up(screen, trogdor, game_state,game_stats['timeH'],game_stats['timeM'],game_stats['timeS'])
         
         # Handle boss logic
@@ -230,13 +230,15 @@ def game_loop(screen):
                 boss.update(trogdor, projectiles)
             elif isinstance(boss, DragonKing):
                 boss.update(trogdor)
-                    for fx, fy, _ in boss.fire_breath:
+                for fx, fy, _ in boss.fire_breath:
+                    if Is_Invulerable(game_stats['timeS'], spawn_time):
                         if (abs(trogdor.x + trogdor.size/2 - fx) < trogdor.size/2 + 5 and
                             abs(trogdor.y + trogdor.size/2 - fy) < trogdor.size/2 + 5):
                             slash_noise.play()
                             game_state['lives'] -= 1
                             trogdor.peasants_stomped = 0
                             trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                            spawn_time = game_stats['timeS']
                             trogdor.burnination_mode = False
                             if game_state['lives'] <= 0:
                                 if game_over(screen) == "exit":
@@ -276,11 +278,12 @@ def game_loop(screen):
                 projectiles.remove(projectile)
             elif Is_Invulerable(game_stats['timeS'], spawn_time):
                 if (abs(trogdor.x + trogdor.size/2 - projectile.x) < trogdor.size/2 + projectile.size and
-                    abs(trogdor.y + trogdor.size/2 - projectile.y) < trogdor.size/2 + projectile.size):
+                  abs(trogdor.y + trogdor.size/2 - projectile.y) < trogdor.size/2 + projectile.size):
                     slash_noise.play()
                     game_state['lives'] -= 1
                     trogdor.peasants_stomped = 0
                     trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                    spawn_time = game_stats['timeS']
                     trogdor.burnination_mode = False
                     projectiles.remove(projectile)
                     if game_state['lives'] <= 0:
@@ -289,7 +292,6 @@ def game_loop(screen):
                         else: # Else restart game from level 1
                             game_state['level'] = 1
                             game_state['lives'] = 3
-                            #reset time variables
                             game_stats['timeF'] = 0
                             game_stats['timeS'] = 0
                             game_stats['timeM'] = 0
@@ -346,7 +348,6 @@ def game_loop(screen):
         #frame to seconds
         if game_stats['timeF'] >= FPS:
             game_stats['timeS']+= 1
-            #GAME_TIME_S += 1
             game_stats['timeF'] =0
 
         #second to minutes

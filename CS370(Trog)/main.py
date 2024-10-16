@@ -158,7 +158,6 @@ def game_loop(screen):
                     trogdor.peasants_stomped = 0
         
         # Check for collisions between Trogdor and knights
-        if Is_Invulerable(game_stats['timeS'], spawn_time):
             for knight in knights:
                 if (abs(trogdor.x - knight.x) < trogdor.size and
                     abs(trogdor.y - knight.y) < trogdor.size):
@@ -182,7 +181,6 @@ def game_loop(screen):
                             trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
                 
         # Check for collisions between Trogdor and knights
-        if Is_Invulerable(game_stats['timeS'], spawn_time):        
             for guardian in guardians:
                 if (abs(trogdor.x - guardian.x) < trogdor.size and
                     abs(trogdor.y - guardian.y) < trogdor.size):
@@ -232,7 +230,6 @@ def game_loop(screen):
                 boss.update(trogdor, projectiles)
             elif isinstance(boss, DragonKing):
                 boss.update(trogdor)
-                if Is_Invulerable(game_stats['timeS'], spawn_time):
                     for fx, fy, _ in boss.fire_breath:
                         if (abs(trogdor.x + trogdor.size/2 - fx) < trogdor.size/2 + 5 and
                             abs(trogdor.y + trogdor.size/2 - fy) < trogdor.size/2 + 5):

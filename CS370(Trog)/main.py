@@ -68,7 +68,7 @@ def initialize_game(level):
     return trogdor, houses, peasants, knights, guardians, boss, projectiles
 
 def Is_Invulerable(current_time, spawn_time):
-    if spawn_time + 2 < current_time: # If your spawn time + two seconds is less than current time invulerable
+    if (spawn_time + 2 < current_time): # If your spawn time + two seconds is less than current time invulerable
         return True
     return False
 
@@ -224,7 +224,6 @@ def game_loop(screen):
                             game_state['houses_crushed'] = 0
                             trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
                             peasants.clear()
-                            # Try to draw the powerup menu background, fall back to black if it fails
                             game_state = select_power_up(screen, trogdor, game_state,game_stats['timeH'],game_stats['timeM'],game_stats['timeS'])
         
         # Handle boss logic

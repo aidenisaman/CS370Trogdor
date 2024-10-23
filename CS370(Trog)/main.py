@@ -159,14 +159,15 @@ def game_loop(screen):
         
         # Check for collisions between Trogdor and knights
 
-        if Is_Invulerable(game_stats['timeS'], spawn_time):
+        if Is_Invulerable(game_stats['timeM'], spawn_time):
             for knight in knights:
                 if (abs(trogdor.x - knight.x) < trogdor.size and
                     abs(trogdor.y - knight.y) < trogdor.size):
                     slash_noise.play()
                     game_state['lives'] -= 1
+                    trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                     trogdor.peasants_stomped = 0
-                    spawn_time = game_stats['timeS']
+                    spawn_time = game_stats['timeM']
                     trogdor.burnination_mode = False
                     if game_state['lives'] <= 0:
                         if game_over(screen) == "exit": # If they select exit, exit game
@@ -183,16 +184,16 @@ def game_loop(screen):
                             spawn_time = 0
                             trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
                     
-        
         # Check for collisions between Trogdor and knights
-        if Is_Invulerable(game_stats['timeS'], spawn_time):
+        if Is_Invulerable(game_stats['timeM'], spawn_time):
             for guardian in guardians:
                 if (abs(trogdor.x - guardian.x) < trogdor.size and
                     abs(trogdor.y - guardian.y) < trogdor.size):
                     slash_noise.play()
                     game_state['lives'] -= 1
+                    trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                     trogdor.peasants_stomped = 0
-                    spawn_time = game_stats['timeS']
+                    spawn_time = game_stats['timeM']
                     trogdor.burnination_mode = False
                     if game_state['lives'] <= 0:
                         if game_over(screen) == "exit": # If they select exit, exit game
@@ -364,11 +365,11 @@ def game_loop(screen):
         #second to minutes
         if game_stats['timeS'] >= 60:
             game_stats['timeM'] += 1
-            game_stats['timeS'] =0
+            game_stats['timeS'] = 0
         #minutes to hours
         if game_stats['timeM'] >= 60:
             game_stats['timeH']+= 1
-            game_stats['timeM']=0
+            game_stats['timeM'] = 0
 
     return False
 

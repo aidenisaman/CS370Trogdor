@@ -85,7 +85,8 @@ PEASANTS_KILLED = 0
 ENEMIES_KILLED = 0
 BOSSES_KILLED = 0
 
-
+# Scoreboard Settings
+SCOREBOARD_SIZE = 10
 def draw_burnination_bar(screen, trogdor, burnination_duration):
     # Draw the burnination bar on the screen
     bar_width = 200

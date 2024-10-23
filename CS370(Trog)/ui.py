@@ -62,15 +62,7 @@ def load_image(name, colorkey=None):
             colorkey = image.get_at((0,0))
         image.set_colorkey(colorkey, pygame.RLEACCEL)
     return image
-def load_background_images():
-    backgrounds = {}
-    for bg_type, filename in [('menu', 'menu.webp'), ('level', 'level.webp')]:
-        image = load_image(filename)
-        if image:
-            backgrounds[bg_type] = image
-        else:
-            print(f"Failed to load {bg_type} background")
-    return backgrounds
+
 
 def load_sound(filename): # Give sound file_name return the file_sound
     file_location = find_data_file(filename) # Get the file
@@ -101,6 +93,16 @@ def play_music(SongNum):
     return
 
 BACKGROUND_IMAGES = None
+
+def load_background_images():
+    backgrounds = {}
+    for bg_type, filename in [('menu', 'menu.webp'), ('level', 'levelGray.webp'), ('powerupMenu', 'level.webp')]:
+        image = load_image(filename)
+        if image:
+            backgrounds[bg_type] = image
+        else:
+            print(f"Failed to load {bg_type} background")
+    return backgrounds
 
 def initialize_background_images():
     global BACKGROUND_IMAGES

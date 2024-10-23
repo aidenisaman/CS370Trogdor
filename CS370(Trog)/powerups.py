@@ -14,7 +14,7 @@ Functions:
 import random
 import pygame
 from utils import POWER_UP_DURATION_MULTIPLIER, POWER_UP_EXTRA_LIFE, POWER_UP_SPEED_BOOST, WIDTH, HEIGHT, BLACK, WHITE,GAME_TIME_S,GAME_TIME_M,GAME_TIME_H
-
+from ui import draw_background
 
 # def get_power_up_time(hours,minutes, seconds):
 #     time_text = font.render(f"Time: {hours}:{minutes}:{seconds}",True ,WHITE)
@@ -51,8 +51,13 @@ def select_power_up(screen, trogdor, game_state,hours,minutes,seconds):
     power_ups = [SpeedBoost(), ExtendedBurnination(), ExtraLife()]
     chosen_power_ups = random.sample(power_ups, 3)
 
-    screen.fill(BLACK)
-    font = pygame.font.Font(None, 36)
+    # Try to draw the menu background, fall back to black if it fails
+    try:
+        draw_background(screen, 'menu')
+    except Exception as e:
+        print(f"Error drawing menu background: {e}")
+        screen.fill(BLACK)
+    font = pygame.font.Font(None, 45)
 
     power_up_texts = [
         font.render(f"1: {chosen_power_ups[0].name}", True, WHITE),

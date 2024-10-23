@@ -174,6 +174,7 @@ def game_loop(screen):
                         else: # Else restart game from level 1
                             game_state['level'] = 1
                             game_state['lives'] = 3
+                            game_state['houses_crushed'] = 0
                             #reset time variables
                             game_stats['timeF'] = 0
                             game_stats['timeS'] = 0
@@ -182,6 +183,7 @@ def game_loop(screen):
                             spawn_time = 0
                             trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
                     
+        
         # Check for collisions between Trogdor and knights
         if Is_Invulerable(game_stats['timeS'], spawn_time):
             for guardian in guardians:
@@ -198,6 +200,7 @@ def game_loop(screen):
                         else: # Else restart game from level 1
                             game_state['level'] = 1
                             game_state['lives'] = 3
+                            game_state['houses_crushed'] = 0
                             #reset time variables
                             game_stats['timeF'] = 0
                             game_stats['timeS'] = 0
@@ -206,7 +209,6 @@ def game_loop(screen):
                             spawn_time = 0
                             trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
             
-
         # Check for collisions between Trogdor and houses
         for house in houses[:]:
             if (abs(trogdor.x - house.x) < trogdor.size and
@@ -222,6 +224,7 @@ def game_loop(screen):
                             game_state['houses_crushed'] = 0
                             trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
                             peasants.clear()
+                            # Try to draw the powerup menu background, fall back to black if it fails
                             game_state = select_power_up(screen, trogdor, game_state,game_stats['timeH'],game_stats['timeM'],game_stats['timeS'])
         
         # Handle boss logic
@@ -298,10 +301,10 @@ def game_loop(screen):
                             game_stats['timeM'] = 0
                             game_stats['timeH'] = 0
                             spawn_time = 0
-                                                    game_state['level'] = 1
-                        game_state['lives'] = 3
-                        game_state['burnination_threshold'] = 5
-                        game_state['houses_crushed'] = 0
+                            game_state['level'] = 1
+                            game_state['lives'] = 3
+                            game_state['burnination_threshold'] = 5
+                            game_state['houses_crushed'] = 0
                             trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
             
 

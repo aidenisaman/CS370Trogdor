@@ -1,5 +1,5 @@
 """
-Manages user interface elements for Trogdor the Burninator.
+Manage user interface elements for Trogdor the Burninator.
 
 Functions:
 - draw_button(screen: pygame.Surface, text: str, x: int, y: int, width: int, height: int, color: Tuple, text_color: Tuple) -> None:

@@ -158,6 +158,7 @@ def game_loop(screen):
                     trogdor.peasants_stomped = 0
         
         # Check for collisions between Trogdor and knights
+
         if Is_Invulerable(game_stats['timeS'], spawn_time):
             for knight in knights:
                 if (abs(trogdor.x - knight.x) < trogdor.size and
@@ -205,6 +206,7 @@ def game_loop(screen):
                             spawn_time = 0
                             trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
             
+
         # Check for collisions between Trogdor and houses
         for house in houses[:]:
             if (abs(trogdor.x - house.x) < trogdor.size and
@@ -229,6 +231,7 @@ def game_loop(screen):
             elif isinstance(boss, DragonKing):
                 boss.update(trogdor)
                 for fx, fy, _ in boss.fire_breath:
+
                     if Is_Invulerable(game_stats['timeS'], spawn_time):
                         if (abs(trogdor.x + trogdor.size/2 - fx) < trogdor.size/2 + 5 and
                             abs(trogdor.y + trogdor.size/2 - fy) < trogdor.size/2 + 5):
@@ -250,6 +253,7 @@ def game_loop(screen):
                                     game_stats['timeH'] = 0
                                     spawn_time = 0
                                     trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
+
 
             if (abs(trogdor.x - boss.x) < trogdor.size + boss.size and
                 abs(trogdor.y - boss.y) < trogdor.size + boss.size):
@@ -301,6 +305,7 @@ def game_loop(screen):
                             trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
             
 
+
         trogdor.update()
         
         # Drawing
@@ -350,7 +355,9 @@ def game_loop(screen):
         #frame to seconds
         if game_stats['timeF'] >= FPS:
             game_stats['timeS']+= 1
-            game_stats['timeF'] =0
+
+            #GAME_TIME_S += 1
+
 
         #second to minutes
         if game_stats['timeS'] >= 60:

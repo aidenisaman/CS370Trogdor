@@ -321,7 +321,7 @@ def game_over(screen):
 #SCOREBOARD
 
 #get the scores scores
-def get_scores():
+def read_scores():
 # Set variables and opens the file
     file = open("scores.txt","a")
     # create arrays for every variable needed
@@ -358,5 +358,15 @@ def get_scores():
 
 # Update the scoreboard when a new score is set
 #will start at the first score and the desent
-def update_scoreboard(name,hours,minute,seconds):
-    print("amongus")
+
+def update_scoreboard(n_name,n_time):
+    new_time = n_time.split(":")
+
+    new_seconds = int(new_time[2])
+    new_minutes = int(new_time[1])
+    new_hours = int(new_time [0])
+
+    ns,ts,hs,ms,ss = read_scores()
+
+def append_scoreboard():
+    return

@@ -7,13 +7,13 @@ Functions:
 - start_screen(screen: pygame.Surface) -> str: Displays and handles the main menu UI.
 - show_congratulations_screen(screen: pygame.Surface) -> None: Displays the end game congratulations screen.
 """
-
+import numpy as np
 import pygame
 import os
 import sys
 from utils import WIDTH, HEIGHT, BLACK, WHITE, GREEN, RED, BLUE, ORANGE, YELLOW
 from utils import MENU_FONT_SIZE, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_PADDING
-
+from utils import SCOREBOARD_SIZE
 def find_data_file(filename):
     if getattr(sys, 'frozen', False):
         datadir = os.path.dirname(sys.executable)
@@ -318,3 +318,45 @@ def game_over(screen):
                             return "exit"
                     # Move the y-coordinate down for the next button
                     button_y += BUTTON_HEIGHT + BUTTON_PADDING
+#SCOREBOARD
+
+#get the scores scores
+def get_scores():
+# Set variables and opens the file
+    file = open("scores.txt","a")
+    # create arrays for every variable needed
+    h = []
+    m = []
+    s = []
+    name = []
+    time =[]
+    #if the file is empty then write the header for the file, else skip to the data values
+    if os.path.getsize("scores.txt") == 0:
+        file.write("Name\t\tTime")
+        for i in SCOREBOARD_SIZE:
+            file.write("---\t\t00:00:00")
+    else:
+        file.write
+    file.readable()
+    #will split the the name and time 
+    for line in file.readlines():
+        c_line = line.split('\t\t')
+        name.append(str(c_line[1]))
+        time.append(str(c_line[2]))
+        t_line = c_line[2].split(":")
+        h.append(int(t_line[0]))
+        m.append(int(t_line[1]))
+        s.append(int(t_line[2]))
+    # Make the arrays into nparrays
+    ns = np.array(name)
+    ts = np.array(time)
+    hs = np.array(h)
+    ms = np.array(m)
+    ss = np.array(s)
+    return ns,ts,hs,ms,ss
+#setup for any file reading
+
+# Update the scoreboard when a new score is set
+#will start at the first score and the desent
+def update_scoreboard(name,hours,minute,seconds):
+    print("amongus")

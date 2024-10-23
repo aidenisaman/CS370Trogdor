@@ -24,16 +24,25 @@ class PowerUp:
         raise NotImplementedError
 
 class SpeedBoost(PowerUp):
+    def __init__(self):
+        self.name = "Speed Boost"
+
     def apply(self, trogdor, game_state):
         trogdor.speed += POWER_UP_SPEED_BOOST
         return game_state
 
 class ExtendedBurnination(PowerUp):
+    def __init__(self):
+        self.name = "Extended Burnination"
+
     def apply(self, trogdor, game_state):
         game_state['burnination_duration'] *= POWER_UP_DURATION_MULTIPLIER
         return game_state
 
 class ExtraLife(PowerUp):
+    def __init__(self):
+        self.name = "Extra Life"
+
     def apply(self, trogdor, game_state):
         game_state['lives'] += POWER_UP_EXTRA_LIFE
         return game_state
@@ -44,14 +53,12 @@ def select_power_up(screen, trogdor, game_state,hours,minutes,seconds):
 
     screen.fill(BLACK)
     font = pygame.font.Font(None, 36)
-    #time_text = font.render(f"Time: {GAME_TIME_H}:{GAME_TIME_M}:{GAME_TIME_S}",True ,WHITE)
-    #screen.blit(time_text,(10.550))
 
     power_up_texts = [
-        font.render("1: Speed Boost", True, WHITE),
-        font.render("2: Extended Burnination", True, WHITE),
-        font.render("3: Extra Life", True, WHITE),
-        font.render(f"Time: {hours}:{minutes}:{seconds}",True ,WHITE)
+        font.render(f"1: {chosen_power_ups[0].name}", True, WHITE),
+        font.render(f"2: {chosen_power_ups[1].name}", True, WHITE),
+        font.render(f"3: {chosen_power_ups[2].name}", True, WHITE),
+        font.render(f"Time: {hours}:{minutes}:{seconds}", True, WHITE)
     ]
 
 

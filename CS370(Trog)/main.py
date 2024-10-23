@@ -276,6 +276,7 @@ def game_loop(screen):
             elif Is_Invulerable(game_stats['timeS'], spawn_time):
                 if (abs(trogdor.x + trogdor.size/2 - projectile.x) < trogdor.size/2 + projectile.size and
                   abs(trogdor.y + trogdor.size/2 - projectile.y) < trogdor.size/2 + projectile.size):
+
                     slash_noise.play()
                     game_state['lives'] -= 1
                     trogdor.peasants_stomped = 0
@@ -293,8 +294,13 @@ def game_loop(screen):
                             game_stats['timeM'] = 0
                             game_stats['timeH'] = 0
                             spawn_time = 0
+                                                    game_state['level'] = 1
+                        game_state['lives'] = 3
+                        game_state['burnination_threshold'] = 5
+                        game_state['houses_crushed'] = 0
                             trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
             
+
         trogdor.update()
         
         # Drawing

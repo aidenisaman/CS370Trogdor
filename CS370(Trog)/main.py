@@ -298,10 +298,10 @@ def game_loop(screen):
                             game_stats['timeM'] = 0
                             game_stats['timeH'] = 0
                             spawn_time = 0
-                                                    game_state['level'] = 1
-                        game_state['lives'] = 3
-                        game_state['burnination_threshold'] = 5
-                        game_state['houses_crushed'] = 0
+                            game_state['level'] = 1
+                            game_state['lives'] = 3
+                            game_state['burnination_threshold'] = 5
+                            game_state['houses_crushed'] = 0
                             trogdor, houses, peasants, knights, guardians, boss, projectiles = initialize_game(game_state['level'])
             
 

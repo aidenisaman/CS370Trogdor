@@ -319,54 +319,100 @@ def game_over(screen):
                     # Move the y-coordinate down for the next button
                     button_y += BUTTON_HEIGHT + BUTTON_PADDING
 #SCOREBOARD
-
-#get the scores scores
-def read_scores():
+# Creates Scoreboard file if it does not exist along with placeholder numbers
+def create_scoreBoard():
+    file = open("scores.txt","w")
+    file.write("Name\t\tTime")
+    for i in range(SCOREBOARD_SIZE):
+        file.write("---\t\t00:00:00")
+    file.close()
+# gets the scores.
+# Scores Does not update/create anything unless a score file does not exist
+def get_scores():
 # Set variables and opens the file
-    file = open("scores.txt","a")
     # create arrays for every variable needed
     h = []
     m = []
     s = []
     name = []
     time =[]
-    #if the file is empty then write the header for the file, else skip to the data values
+    #if the file is empty then write the original score file
     if os.path.getsize("scores.txt") == 0:
-        file.write("Name\t\tTime")
-        for i in SCOREBOARD_SIZE:
-            file.write("---\t\t00:00:00")
+        create_scoreBoard()
+        file = open("scores.txt","r") # after file is generated, re opened inside the fucntion
     else:
-        file.write
-    file.readable()
+        file = open("scores.txt","r")
+        file.readline()#will skip the header if it exist
+    
     #will split the the name and time 
     for line in file.readlines():
         c_line = line.split('\t\t')
         name.append(str(c_line[1]))
         time.append(str(c_line[2]))
+        #Takes time ans split it to integers of the number
         t_line = c_line[2].split(":")
         h.append(int(t_line[0]))
         m.append(int(t_line[1]))
         s.append(int(t_line[2]))
     # Make the arrays into nparrays
-    ns = np.array(name)
-    ts = np.array(time)
-    hs = np.array(h)
-    ms = np.array(m)
-    ss = np.array(s)
+    ns = name
+    ts = time
+    hs = h
+    ms = m
+    ss = s
+    # Close the file
+    file.close()
     return ns,ts,hs,ms,ss
-#setup for any file reading
 
-# Update the scoreboard when a new score is set
-#will start at the first score and the desent
 
-def update_scoreboard(n_name,n_time):
+# Compare the Scores to see if a new highscore is set
+# will start at the first score and the desent
+
+def compare_scores(n_time):
     new_time = n_time.split(":")
+# Separate the time intervals into integers
+    new_s = int(new_time[2])
+    new_m = int(new_time[1])
+    new_h = int(new_time [0])
+# Then Take them and turn all of them to seconds
+    new_score = new_h * 3600 + new_m * 60 + new_s
+    # get the scores from the file
+    ns,ts,hs,ms,ss = get_scores()
+    current_scores =[]
+    # makes all the current sec
+    for i in range(SCOREBOARD_SIZE):
+        current_scores.append(hs[i]*3600+ms[i]*60+ss[i])
+    updated_s = []
+    updated_m = []
+    updated_h = []
+    # Go through every score starting at the top to compare which is the biggest one
+    for i in range(SCOREBOARD_SIZE):
+        if new_score < current_scores[i][0]:  # If new score is better (less time)
+            updated_s.insert(i,)
+            updated_m.insert(i,)
+            updated_h.insert(i,)
+            
+# Displays the scoreboard as an option in the main menu                 
+def scoreboard():
+    #cant figure hout to begin the screen to be called
+    screen.fill(BLACK)
+    font = pygame.font.Font(None, 18)
+    ns,ts,hs,ms,ss = get_scores()
 
-    new_seconds = int(new_time[2])
-    new_minutes = int(new_time[1])
-    new_hours = int(new_time [0])
-
-    ns,ts,hs,ms,ss = read_scores()
-
-def append_scoreboard():
     return
+    #compares the score and will update to the
+#     ns,ts = update_scores(n_time,new_h,new_m,new_s,ns,ts,hs,ms,ss)
+
+# # Compares the scores and will update the arrays with name
+# def update_scores(n_time,new_h,new_m,new_s,ns,ts,hs,ms,ss):
+#     # Makes the Current scores be turned to integers with seconds total
+#     new_score = new_h * 3600 + new_m * 60 + new_s
+#     current_scores =[]
+#     # makes all the current sec
+#     for i in range(SCOREBOARD_SIZE):
+#         current_scores.append(hs[i]*3600+ms[i]*60+ss[i])
+    
+#     for i in range(SCOREBOARD_SIZE):
+#         if new_score < current_scores[i][0]:  # If new score is better (less time)
+            
+#             break

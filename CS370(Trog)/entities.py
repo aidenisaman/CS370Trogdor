@@ -12,7 +12,10 @@ Classes:
 import pygame
 import random
 import math
-from utils import HOUSE_HEALTH, HOUSE_SIZE, KNIGHT_CHASE_PROBABILITY, KNIGHT_DIRECTION_CHANGE_INTERVAL, KNIGHT_SIZE, KNIGHT_SPEED, MERLIN_PROJECTILE_SPEED, PEASANT_DIRECTION_CHANGE_INTERVAL, WIDTH, HEIGHT, RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, TROGDOR_SIZE, TROGDOR_SPEED, TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, PEASANT_SIZE, PEASANT_SPEED
+from utils import (HOUSE_HEALTH, HOUSE_SIZE, KNIGHT_CHASE_PROBABILITY, KNIGHT_DIRECTION_CHANGE_INTERVAL,
+                   KNIGHT_SIZE, KNIGHT_SPEED, MERLIN_PROJECTILE_SPEED, PEASANT_DIRECTION_CHANGE_INTERVAL,
+                   WIDTH, HEIGHT, RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, BLACK, TROGDOR_SIZE, TROGDOR_SPEED,
+                   TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, PEASANT_SIZE, PEASANT_SPEED)
 
 class Trogdor:
     def __init__(self):
@@ -34,6 +37,10 @@ class Trogdor:
         # Draw Trogdor on the screen, changing color if in burnination mode
         color = ORANGE if self.burnination_mode else RED
         pygame.draw.rect(screen, color, (self.x, self.y, self.size, self.size))
+        pygame.draw.circle(screen, BLACK, (self.x + 5, self.y + 7), 5)
+        pygame.draw.circle(screen, BLACK, (self.x + 15, self.y + 7), 5)
+
+
 
     def update(self):
         # Update Trogdor's burnination mode timer

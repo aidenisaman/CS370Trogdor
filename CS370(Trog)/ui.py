@@ -320,3 +320,11 @@ def game_over(screen):
                             return "exit"
                     # Move the y-coordinate down for the next button
                     button_y += BUTTON_HEIGHT + BUTTON_PADDING
+
+def draw_burnination_bar(screen, trogdor, burnination_duration):
+    # Draw the burnination bar on the screen
+    bar_width = 200
+    bar_height = 20
+    fill_width = bar_width * (trogdor.burnination_timer / burnination_duration)
+    pygame.draw.rect(screen, RED, (HEIGHT // 2 - 10, 70, bar_width, bar_height), 2)
+    pygame.draw.rect(screen, ORANGE, (HEIGHT // 2 - 10, 70, fill_width, bar_height))

@@ -86,10 +86,3 @@ ENEMIES_KILLED = 0
 BOSSES_KILLED = 0
 
 
-def draw_burnination_bar(screen, trogdor, burnination_duration):
-    # Draw the burnination bar on the screen
-    bar_width = 200
-    bar_height = 20
-    fill_width = bar_width * (trogdor.burnination_timer / burnination_duration)
-    pygame.draw.rect(screen, RED, (WIDTH - bar_width - 10, 10, bar_width, bar_height), 2)
-    pygame.draw.rect(screen, ORANGE, (WIDTH - bar_width - 10, 10, fill_width, bar_height))

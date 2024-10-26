@@ -7,28 +7,15 @@ Functions:
  """
 import random
 import pygame
-import math
-from ui import draw_background, initialize_background_images
-
-# Initialize Pygame
-pygame.init()
-
-# Initialize Pygame modules
-pygame.font.init()  # Initialize the font module
-pygame.mixer.init()  # Initialize the mixer module for sound
-
-# Set up the display
-WIDTH, HEIGHT = 800, 600
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Trogdor 2: Return of the Burninator")
 
 from entities import Trogdor, Peasant, Knight, Guardian, House
 from bosses import Merlin, DragonKing
 from powerups import select_power_up
 from utils import (BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, ORANGE, PEASANT_SPAWN_PROBABILITY,
                    RED, TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, WHITE, WIDTH, HEIGHT, BLACK, FPS, INITIAL_LIVES,
-                   YELLOW,GAME_TIME_F,GAME_TIME_S,GAME_TIME_M,GAME_TIME_H, draw_burnination_bar)
-from ui import start_screen, show_congratulations_screen, pause_game, game_over, load_sound, play_music 
+                   YELLOW,GAME_TIME_F,GAME_TIME_S,GAME_TIME_M,GAME_TIME_H)
+from ui import (start_screen, show_congratulations_screen, pause_game, game_over, load_sound,
+                play_music, draw_background, initialize_background_images, draw_burnination_bar) 
 
 
 # Initialize Pygame
@@ -88,7 +75,6 @@ def game_loop(screen):
         'timeS':0,
         'timeM':0,
         'timeH':0
-
     }
     
     # Initialize game objects
@@ -158,7 +144,6 @@ def game_loop(screen):
                     trogdor.peasants_stomped = 0
         
         # Check for collisions between Trogdor and knights
-
         if Is_Invulerable(game_stats['timeM'], spawn_time):
             for knight in knights:
                 if (abs(trogdor.x - knight.x) < trogdor.size and
@@ -314,6 +299,9 @@ def game_loop(screen):
         # Drawing
         screen.fill(BLACK)
         draw_background(screen, 'level')
+        pygame.draw.rect(screen, BLACK, (0, 0, WIDTH, 40), 0)
+
+
         
         for house in houses:
             house.draw(screen)
@@ -338,11 +326,11 @@ def game_loop(screen):
         time_text = font.render(f"Time: {game_stats['timeH']}:{game_stats['timeM']}:{game_stats['timeS']}",True ,WHITE)
         burnination_text = font.render("BURNINATION!" if trogdor.burnination_mode else "", True, ORANGE)
         screen.blit(lives_text, (10, 10))
-        screen.blit(peasants_text, (10, 50))
-        screen.blit(houses_text, (10, 90))
-        screen.blit(level_text, (10, 130))
-        screen.blit(time_text,(10,550))
-        screen.blit(burnination_text, (WIDTH // 2 - 100, 10))
+        screen.blit(peasants_text, (125, 10))
+        screen.blit(houses_text, (325, 10))
+        screen.blit(level_text, (500, 10))
+        screen.blit(time_text,(625, 10))
+        screen.blit(burnination_text, (HEIGHT // 2, 45))
         
         if boss:
             boss_text = font.render(f"BOSS: {type(boss).__name__}", True, RED)

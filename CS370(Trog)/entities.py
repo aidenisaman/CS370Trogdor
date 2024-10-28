@@ -36,7 +36,7 @@ class Trogdor:
     def draw(self, screen):
         # Draw Trogdor on the screen, changing color if in burnination mode
         color = ORANGE if self.burnination_mode else DARKGREEN
-        pygame.draw.rect(screen, color, (self.x, self.y, self.size, self.size))
+        pygame.draw.rect(screen, color, (self.x, self.y, self.size, self.size)) # Body
         pygame.draw.circle(screen, WHITE, (self.x + 5, self.y + 7), 5) # Eyes
         pygame.draw.circle(screen, WHITE, (self.x + 15, self.y + 7), 5)
         pygame.draw.circle(screen, BLACK, (self.x + 5, self.y + 7), 2)
@@ -80,7 +80,7 @@ class Knight:
     def __init__(self):
         # Initialize Knight's position, size, speed, and movement direction
         self.x = random.randint(0, WIDTH)
-        self.y = random.randint(0, HEIGHT)
+        self.y = random.randint(UIBARHEIGHT, HEIGHT)
         self.size = KNIGHT_SIZE
         self.speed = KNIGHT_SPEED
         self.direction = random.uniform(0, 2 * math.pi)

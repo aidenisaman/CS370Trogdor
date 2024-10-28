@@ -11,7 +11,10 @@ Each boss class includes methods for updating, taking damage, and drawing.
 import pygame
 import random
 import math
-from utils import LANCELOT_AIM_DURATION, LANCELOT_CHARGE_SPEED, LANCELOT_SIZE, LANCELOT_VULNERABLE_DURATION, MERLIN_PROJECTILE_COOLDOWN, MERLIN_PROJECTILE_SIZE, MERLIN_SIZE, MERLIN_TELEPORT_DISTANCE, WIDTH, HEIGHT, RED, GREEN, BLUE, YELLOW, ORANGE, WHITE, BLACK
+from utils import (LANCELOT_AIM_DURATION, LANCELOT_CHARGE_SPEED, LANCELOT_SIZE, 
+                   LANCELOT_VULNERABLE_DURATION, MERLIN_PROJECTILE_COOLDOWN, MERLIN_PROJECTILE_SIZE, 
+                   MERLIN_SIZE, MERLIN_TELEPORT_DISTANCE, WIDTH, HEIGHT, UIBARHEIGHT,
+                     RED, GREEN, BLUE, YELLOW, ORANGE, WHITE, BLACK)
 from utils import BOSS_HEALTH_BAR_WIDTH, BOSS_HEALTH_BAR_HEIGHT, BOSS_HEALTH_BAR_BORDER
 from entities import Projectile
 
@@ -20,7 +23,7 @@ from entities import Projectile
 class Merlin:
     def __init__(self):
         self.x = random.randint(0, WIDTH - MERLIN_SIZE)
-        self.y = random.randint(0, HEIGHT - MERLIN_SIZE)
+        self.y = random.randint(UIBARHEIGHT, HEIGHT - MERLIN_SIZE)
         self.size = MERLIN_SIZE
         self.max_health = 3
         self.health = self.max_health
@@ -47,7 +50,7 @@ class Merlin:
         new_x = self.x + math.cos(angle) * MERLIN_TELEPORT_DISTANCE
         new_y = self.y + math.sin(angle) * MERLIN_TELEPORT_DISTANCE
         self.x = max(0, min(WIDTH - self.size, new_x))
-        self.y = max(0, min(HEIGHT - self.size, new_y))
+        self.y = max(UIBARHEIGHT, min(HEIGHT - self.size, new_y))
 
     def draw(self, screen):
         pygame.draw.rect(screen, BLUE, (self.x, self.y, self.size, self.size))
@@ -85,7 +88,7 @@ class Merlin:
 class Lancelot:
     def __init__(self):
         self.x = random.randint(0, WIDTH - LANCELOT_SIZE)
-        self.y = random.randint(0, HEIGHT - LANCELOT_SIZE)
+        self.y = random.randint(UIBARHEIGHT, HEIGHT - LANCELOT_SIZE)
         self.size = LANCELOT_SIZE
         self.max_health = 3
         self.health = self.max_health
@@ -102,7 +105,7 @@ class Lancelot:
         elif self.state == "charging":
             self.x += self.charge_direction[0] * self.charge_speed
             self.y += self.charge_direction[1] * self.charge_speed
-            if self.x <= 0 or self.x >= WIDTH - self.size or self.y <= 0 or self.y >= HEIGHT - self.size:
+            if self.x <= 0 or self.x >= WIDTH - self.size or self.y <= UIBARHEIGHT or self.y >= HEIGHT - self.size:
                 self.state = "vulnerable"
                 self.timer = LANCELOT_VULNERABLE_DURATION
         elif self.state == "vulnerable":
@@ -159,7 +162,7 @@ class Lancelot:
 class DragonKing:
     def __init__(self):
         self.x = random.randint(0, WIDTH - LANCELOT_SIZE)
-        self.y = random.randint(0, HEIGHT - LANCELOT_SIZE)
+        self.y = random.randint(UIBARHEIGHT, HEIGHT - LANCELOT_SIZE)
         self.size = LANCELOT_SIZE * 1.5
         self.max_health = 5
         self.health = self.max_health
@@ -184,8 +187,8 @@ class DragonKing:
 
         if self.state == "flying":
             angle = math.atan2(trogdor.y - self.y, trogdor.x - self.x)
-            self.x += math.cos(angle) * 2
-            self.y += math.sin(angle) * 2
+            self.x += math.cos(angle) * 2 # TODO Needs to updated to include max bounds
+            self.y += math.sin(angle) * 2 # Same for this line
 
         for i, (fx, fy, fangle) in enumerate(self.fire_breath):
             self.fire_breath[i] = (fx + math.cos(fangle) * 5, fy + math.sin(fangle) * 5, fangle)

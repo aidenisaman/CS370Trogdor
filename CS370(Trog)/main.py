@@ -100,7 +100,7 @@ def game_loop(screen):
         if level_cnt < game_state['level']: 
             bell_noise.play()
             level_cnt = game_state['level']
-            spawn_time = game_stats['timeS']
+            spawn_time = game_stats['timeM']
 
         # Handle player input
         keys = pygame.key.get_pressed()

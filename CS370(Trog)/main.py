@@ -13,7 +13,7 @@ from bosses import Merlin, DragonKing
 from powerups import select_power_up
 from utils import (BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, ORANGE, PEASANT_SPAWN_PROBABILITY,
                    RED,TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, WHITE, WIDTH, HEIGHT, BLACK, FPS, INITIAL_LIVES,
-                   YELLOW, GAME_TIME_F, GAME_TIME_S, GAME_TIME_M, GAME_TIME_H)
+                   YELLOW, GAME_TIME_F, GAME_TIME_S, GAME_TIME_M, GAME_TIME_H, UIBARHEIGHT)
 from ui import (start_screen, show_congratulations_screen, pause_game, game_over, load_sound,
                 play_music, draw_background, initialize_background_images, draw_burnination_bar) 
 
@@ -299,7 +299,7 @@ def game_loop(screen):
         # Drawing
         screen.fill(BLACK)
         draw_background(screen, 'level')
-        pygame.draw.rect(screen, BLACK, (0, 0, WIDTH, 40), 0)
+        pygame.draw.rect(screen, BLACK, (0, 0, WIDTH, UIBARHEIGHT), 0) # Black UI bar
 
 
         
@@ -318,6 +318,7 @@ def game_loop(screen):
         trogdor.draw(screen)
         
         # UI
+        # Should eventually be moved into UI with a UI function doing this
         font = pygame.font.Font(None, 36)
         lives_text = font.render(f"Lives: {game_state['lives']}", True, RED)
         peasants_text = font.render(f"Peasants: {trogdor.peasants_stomped}/{game_state['burnination_threshold']}", True, GREEN)

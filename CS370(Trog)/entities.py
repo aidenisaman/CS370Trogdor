@@ -35,7 +35,7 @@ class Trogdor:
 
     def draw(self, screen):
         # Draw Trogdor on the screen, changing color if in burnination mode
-        color = ORANGE if self.burnination_mode else DARKGREEN
+        color = ORANGE if self.burnination_mode else RED
         pygame.draw.rect(screen, color, (self.x, self.y, self.size, self.size)) # Body
         pygame.draw.circle(screen, WHITE, (self.x + 5, self.y + 7), 5) # Eyes
         pygame.draw.circle(screen, WHITE, (self.x + 15, self.y + 7), 5)

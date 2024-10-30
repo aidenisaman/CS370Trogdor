@@ -14,7 +14,7 @@ import random
 import math
 from utils import (HOUSE_HEALTH, HOUSE_SIZE, KNIGHT_CHASE_PROBABILITY, KNIGHT_DIRECTION_CHANGE_INTERVAL,
                    KNIGHT_SIZE, KNIGHT_SPEED, MERLIN_PROJECTILE_SPEED, PEASANT_DIRECTION_CHANGE_INTERVAL,
-                   WIDTH, HEIGHT, RED, DARKGREEN, GREEN, BLUE, YELLOW, ORANGE, PURPLE, WHITE, BLACK, TROGDOR_SIZE, TROGDOR_SPEED,
+                   WIDTH, HEIGHT, RED, DARKGREEN, DARKORANGE, GREEN, BLUE, YELLOW, ORANGE, PURPLE, WHITE, BLACK, TROGDOR_SIZE, TROGDOR_SPEED,
                    TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, PEASANT_SIZE, PEASANT_SPEED, UIBARHEIGHT, LANCER_SPEED, LANCER_SIZE)
 
 class Trogdor:
@@ -226,4 +226,8 @@ class Lancer:
 
     def draw(self, screen):
         # Draw the Lancer on the screen as a rectangle
+      if self.movement_axis == "vertical":
+        pygame.draw.rect(screen, DARKORANGE, (self.x, self.y, self.size, self.size))
+      elif self.movement_axis == "horizontal":
         pygame.draw.rect(screen, WHITE, (self.x, self.y, self.size, self.size))
+          

@@ -16,6 +16,7 @@ import pygame
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
+DARKGREEN = (0, 128, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 ORANGE = (255, 165, 0)
@@ -24,6 +25,7 @@ PURPLE = (150, 0, 255)
 
 # Game Settings
 WIDTH, HEIGHT = 800, 600
+UIBARHEIGHT = 40
 FPS = 60
 
 TROGDOR_SIZE = 20
@@ -86,10 +88,3 @@ ENEMIES_KILLED = 0
 BOSSES_KILLED = 0
 
 
-def draw_burnination_bar(screen, trogdor, burnination_duration):
-    # Draw the burnination bar on the screen
-    bar_width = 200
-    bar_height = 20
-    fill_width = bar_width * (trogdor.burnination_timer / burnination_duration)
-    pygame.draw.rect(screen, RED, (WIDTH - bar_width - 10, 10, bar_width, bar_height), 2)
-    pygame.draw.rect(screen, ORANGE, (WIDTH - bar_width - 10, 10, fill_width, bar_height))

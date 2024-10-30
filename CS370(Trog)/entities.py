@@ -12,7 +12,10 @@ Classes:
 import pygame
 import random
 import math
-from utils import HOUSE_HEALTH, HOUSE_SIZE, KNIGHT_CHASE_PROBABILITY, KNIGHT_DIRECTION_CHANGE_INTERVAL, KNIGHT_SIZE, KNIGHT_SPEED, MERLIN_PROJECTILE_SPEED, PEASANT_DIRECTION_CHANGE_INTERVAL, WIDTH, HEIGHT, RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, TROGDOR_SIZE, TROGDOR_SPEED, TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, PEASANT_SIZE, PEASANT_SPEED
+from utils import (HOUSE_HEALTH, HOUSE_SIZE, KNIGHT_CHASE_PROBABILITY, KNIGHT_DIRECTION_CHANGE_INTERVAL,
+                   KNIGHT_SIZE, KNIGHT_SPEED, MERLIN_PROJECTILE_SPEED, PEASANT_DIRECTION_CHANGE_INTERVAL,
+                   WIDTH, HEIGHT, RED, DARKGREEN, GREEN, BLUE, YELLOW, ORANGE, PURPLE, WHITE, BLACK, TROGDOR_SIZE, TROGDOR_SPEED,
+                   TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, PEASANT_SIZE, PEASANT_SPEED, UIBARHEIGHT)
 
 class Trogdor:
     def __init__(self):
@@ -28,12 +31,18 @@ class Trogdor:
     def move(self, dx, dy):
         # Move Trogdor within the screen boundaries
         self.x = max(0, min(WIDTH - self.size, self.x + dx * self.speed))
-        self.y = max(0, min(HEIGHT - self.size, self.y + dy * self.speed))
+        self.y = max(UIBARHEIGHT, min(HEIGHT - self.size, self.y + dy * self.speed))
 
     def draw(self, screen):
         # Draw Trogdor on the screen, changing color if in burnination mode
         color = ORANGE if self.burnination_mode else RED
-        pygame.draw.rect(screen, color, (self.x, self.y, self.size, self.size))
+        pygame.draw.rect(screen, color, (self.x, self.y, self.size, self.size)) # Body
+        pygame.draw.circle(screen, WHITE, (self.x + 5, self.y + 7), 5) # Eyes
+        pygame.draw.circle(screen, WHITE, (self.x + 15, self.y + 7), 5)
+        pygame.draw.circle(screen, BLACK, (self.x + 5, self.y + 7), 2)
+        pygame.draw.circle(screen, BLACK, (self.x + 15, self.y + 7), 2)
+
+
 
     def update(self):
         # Update Trogdor's burnination mode timer
@@ -62,7 +71,7 @@ class Peasant:
         dx = math.cos(self.direction) * self.speed
         dy = math.sin(self.direction) * self.speed
         self.x = max(0, min(WIDTH - self.size, self.x + dx))
-        self.y = max(0, min(HEIGHT - self.size, self.y + dy))
+        self.y = max(UIBARHEIGHT, min(HEIGHT - self.size, self.y + dy))
 
     def draw(self, screen):
         # Draw Peasant on the screen
@@ -71,7 +80,7 @@ class Knight:
     def __init__(self):
         # Initialize Knight's position, size, speed, and movement direction
         self.x = random.randint(0, WIDTH)
-        self.y = random.randint(0, HEIGHT)
+        self.y = random.randint(UIBARHEIGHT, HEIGHT)
         self.size = KNIGHT_SIZE
         self.speed = KNIGHT_SPEED
         self.direction = random.uniform(0, 2 * math.pi)
@@ -97,7 +106,7 @@ class Knight:
         dx = math.cos(self.direction) * self.speed
         dy = math.sin(self.direction) * self.speed
         self.x = max(0, min(WIDTH - self.size, self.x + dx))
-        self.y = max(0, min(HEIGHT - self.size, self.y + dy))
+        self.y = max(UIBARHEIGHT, min(HEIGHT - self.size, self.y + dy))
 
     def chase(self, trogdor):
         # Set Knight's direction towards Trogdor
@@ -115,7 +124,7 @@ class House:
     def __init__(self):
         # Initialize House's position, size, and health
         self.x = random.randint(0, WIDTH - HOUSE_SIZE)
-        self.y = random.randint(0, HEIGHT - HOUSE_SIZE)
+        self.y = random.randint(UIBARHEIGHT, HEIGHT - HOUSE_SIZE)
         self.size = HOUSE_SIZE
         self.health = HOUSE_HEALTH
 
@@ -139,7 +148,7 @@ class Guardian:
         dx = math.cos(angle) * self.speed * 2.5
         dy = math.sin(angle) * self.speed * 2.5
         self.x = max(0, min(WIDTH - self.size, self.x + dx))
-        self.y = max(0, min(HEIGHT - self.size, self.y + dy))
+        self.y = max(UIBARHEIGHT, min(HEIGHT - self.size, self.y + dy))
 
     def draw(self, screen):
         #Draw guardian on screen

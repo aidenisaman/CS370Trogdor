@@ -8,7 +8,7 @@ Functions:
 import random
 import pygame
 
-from entities import Trogdor, Peasant, Knight, Guardian, House
+from entities import Trogdor, Peasant, Knight, Guardian, House, Teleporter
 from bosses import Merlin, DragonKing
 from powerups import select_power_up
 from utils import (BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, ORANGE, PEASANT_SPAWN_PROBABILITY,
@@ -46,13 +46,14 @@ def initialize_game(level):
         guardians.append(Guardian(random.choice(houses)))
     boss = None
     projectiles = []
+    teleporter = [Teleporter() for _ in range(min(level, 1))] if level not in [5, 10] else []
 
     if level == 5:
         boss = Merlin()
     elif level == 10:
         boss = DragonKing()
 
-    return trogdor, houses, peasants, knights, guardians, boss, projectiles
+    return trogdor, houses, peasants, knights, guardians, boss, projectiles, teleporter
 
 def Is_Invulerable(current_time, spawn_time):
     if (spawn_time + 2 < current_time): # If your spawn time + two seconds is less than current time invulerable
@@ -126,6 +127,9 @@ def game_loop(screen):
         for guardian in guardians:
             guardian.move(guardian_angle)
         guardian_angle += 0.0175 # Higer number makes smaller circle, lower wider circle
+        if (game_stats['timeM'] % 2 == 0): # If your spawn time + two seconds is less than current time invulerable
+            for teleporter in teleporters:
+                teleporter.move()
         
         # Randomly spawn new peasants
         if random.random() < PEASANT_SPAWN_PROBABILITY and houses:

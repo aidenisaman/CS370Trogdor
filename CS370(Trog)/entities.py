@@ -139,8 +139,8 @@ class House:
 class Guardian:
     def __init__(self, house):
         #Intailize with house spawn, center being a house
-        self.x = house.x +5
-        self.y = house.y -50
+        self.x = house.x + 5
+        self.y = house.y - 50
         self.size = KNIGHT_SIZE
         self.speed = KNIGHT_SPEED - .25
     
@@ -161,15 +161,19 @@ class Teleporter:
         self.x = random.randint(0, WIDTH - HOUSE_SIZE)
         self.y = random.randint(UIBARHEIGHT, HEIGHT - HOUSE_SIZE)
         self.size = TELEPORTER_SIZE
-        self.jumpsize = 40
+        self.jumpsize = 100
 
     def move(self, trogdor):
         # Move Trogdor within the screen boundaries
         angle = math.atan2(trogdor.y - self.y, trogdor.x - self.x)
         dx = math.cos(angle) * self.jumpsize
         dy = math.sin(angle) * self.jumpsize
-        self.x = max(0, min(WIDTH - self.size, self.x + dx * self.jumpsize))
-        self.y = max(UIBARHEIGHT, min(HEIGHT - self.size, self.y + dy * self.jumpsize))
+        if ((abs(dx) > abs(self.x - trogdor.x)) & (abs(dy) > abs(self.y - trogdor.y))):
+            self.x = trogdor.x
+            self.y = trogdor.y
+        else:
+            self.x = max(0, min(WIDTH - self.size, self.x + dx))
+            self.y = max(UIBARHEIGHT, min(HEIGHT - self.size, self.y + dy))
 
     def draw(self, screen):
         pygame.draw.rect(screen, DARKGREEN, (self.x, self.y, self.size, self.size)) # Body

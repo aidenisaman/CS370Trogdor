@@ -8,7 +8,7 @@ Functions:
 import random
 import pygame
 
-from entities import Trogdor, Peasant, Knight, Guardian, House, Lancer
+from entities import Trogdor, Peasant, Knight, Guardian, House, Lancer, Teleporter
 from bosses import Merlin, DragonKing
 from powerups import select_power_up
 from utils import (BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, ORANGE, PEASANT_SPAWN_PROBABILITY,
@@ -47,13 +47,15 @@ def initialize_game(level):
     lancers = [Lancer() for _ in range(min(level, 4))] if level not in [5, 10] else []
     boss = None
     projectiles = []
+    teleporters = [Teleporter() for _ in range(min(level, 1))] if level not in [5, 10] else []
 
     if level == 5:
         boss = Merlin()
     elif level == 10:
         boss = DragonKing()
 
-    return trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles
+
+    return trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters 
 
 def Is_Invulerable(current_time, spawn_time):
     if (spawn_time + 2 < current_time): # If your spawn time + two seconds is less than current time invulerable
@@ -79,7 +81,8 @@ def game_loop(screen):
     }
     
     # Initialize game objects
-    trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles = initialize_game(game_state['level'])
+
+    trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters = initialize_game(game_state['level'])
     
 
     # Initialize level count to track the level without changing game_state['level']
@@ -87,6 +90,9 @@ def game_loop(screen):
 
     # For circling with guardian
     guardian_angle = 0
+
+    # Time for each jump of teleporter
+    jump_time = 0
 
     # Create a clock object to control the frame rate
     running = True
@@ -128,6 +134,10 @@ def game_loop(screen):
         for guardian in guardians:
             guardian.move(guardian_angle)
         guardian_angle += 0.0175 # Higer number makes smaller circle, lower wider circle
+        if (jump_time + 100 < game_stats['timeF']): # Move teleporter every two seconds
+            jump_time = game_stats['timeF']
+            for teleporter in teleporters:
+                teleporter.move(trogdor)        
         for lancer in lancers:
             lancer.move(trogdor)
 
@@ -171,8 +181,9 @@ def game_loop(screen):
                             game_stats['timeM'] = 0
                             game_stats['timeH'] = 0
                             spawn_time = 0
-                            trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles = initialize_game(game_state['level'])
-
+                            jump_time = 0
+                            trogdor, houses, peasants, knights, guardians, lancers boss, projectiles, teleporters = initialize_game(game_state['level'])
+                    
                  # Check for collisions with Trogdor
         if Is_Invulerable(game_stats['timeM'], spawn_time):         
             for lancer in lancers:
@@ -196,7 +207,7 @@ def game_loop(screen):
                            game_stats['timeM'] = 0
                            game_stats['timeH'] = 0
                            spawn_time = 0
-                           trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles = initialize_game(game_state['level'])        
+                           trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters = initialize_game(game_state['level'])        
     
         # Check for collisions between Trogdor and knights
         if Is_Invulerable(game_stats['timeM'], spawn_time):
@@ -222,8 +233,36 @@ def game_loop(screen):
                             game_stats['timeM'] = 0
                             game_stats['timeH'] = 0
                             spawn_time = 0
-                            trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles = initialize_game(game_state['level'])
-            
+                            jump_time = 0
+                            trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters = initialize_game(game_state['level'])
+
+        # Check for collisions between Trogdor and teleporters
+        if Is_Invulerable(game_stats['timeM'], spawn_time):
+            for teleporter in teleporters:
+                if (abs(trogdor.x - teleporter.x) < trogdor.size and
+                    abs(trogdor.y - teleporter.y) < trogdor.size):
+                    slash_noise.play()
+                    game_state['lives'] -= 1
+                    trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                    trogdor.peasants_stomped = 0
+                    spawn_time = game_stats['timeM']
+                    trogdor.burnination_mode = False
+                    if game_state['lives'] <= 0:
+                        if game_over(screen) == "exit": # If they select exit, exit game
+                            running = False
+                        else: # Else restart game from level 1
+                            game_state['level'] = 1
+                            game_state['lives'] = 3
+                            game_state['houses_crushed'] = 0
+                            #reset time variables
+                            game_stats['timeF'] = 0
+                            game_stats['timeS'] = 0
+                            game_stats['timeM'] = 0
+                            game_stats['timeH'] = 0
+                            spawn_time = 0
+                            jump_time = 0
+                            trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters = initialize_game(game_state['level'])
+
         # Check for collisions between Trogdor and houses
         for house in houses[:]:
             if (abs(trogdor.x - house.x) < trogdor.size and
@@ -237,7 +276,7 @@ def game_loop(screen):
                             game_state['level'] += 1
                             game_state['burnination_threshold'] += 2
                             game_state['houses_crushed'] = 0
-                            trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles = initialize_game(game_state['level'])
+                            trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters = initialize_game(game_state['level'])
                             peasants.clear()
                             game_state = select_power_up(screen, trogdor, game_state,game_stats['timeH'],game_stats['timeM'],game_stats['timeS'])
         
@@ -269,6 +308,7 @@ def game_loop(screen):
                                     game_stats['timeM'] = 0
                                     game_stats['timeH'] = 0
                                     spawn_time = 0
+                                    jump_time = 0
                                     trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles = initialize_game(game_state['level'])
 
 
@@ -285,7 +325,7 @@ def game_loop(screen):
                         show_congratulations_screen(screen)
                         return True  # Game completed
 
-                    trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles = initialize_game(game_state['level'])
+                    trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters = initialize_game(game_state['level'])
                     game_state = select_power_up(screen, trogdor, game_state,int(game_stats['timeH']),game_stats['timeM'],game_stats['timeS'])
         
         # Update projectiles
@@ -315,11 +355,9 @@ def game_loop(screen):
                             game_stats['timeM'] = 0
                             game_stats['timeH'] = 0
                             spawn_time = 0
-                            game_state['level'] = 1
-                            game_state['lives'] = 3
-                            game_state['burnination_threshold'] = 5
-                            game_state['houses_crushed'] = 0
-                            trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles = initialize_game(game_state['level'])
+                            jump_time = 0
+                            trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters = initialize_game(game_state['level'])
+
             
 
 
@@ -344,6 +382,8 @@ def game_loop(screen):
             lancer.draw(screen)
         for projectile in projectiles:
             projectile.draw(screen)
+        for teleporter in teleporters:
+            teleporter.draw(screen)
         if boss:
             boss.draw(screen)
         trogdor.draw(screen)

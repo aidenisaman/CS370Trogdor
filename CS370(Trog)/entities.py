@@ -15,7 +15,7 @@ import math
 from utils import (HOUSE_HEALTH, HOUSE_SIZE, KNIGHT_CHASE_PROBABILITY, KNIGHT_DIRECTION_CHANGE_INTERVAL,
                    KNIGHT_SIZE, KNIGHT_SPEED, MERLIN_PROJECTILE_SPEED, PEASANT_DIRECTION_CHANGE_INTERVAL,
                    WIDTH, HEIGHT, RED, DARKGREEN, DARKORANGE, GREEN, BLUE, YELLOW, ORANGE, PURPLE, WHITE, BLACK, TROGDOR_SIZE, TROGDOR_SPEED,
-                   TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, PEASANT_SIZE, PEASANT_SPEED, UIBARHEIGHT, LANCER_SPEED, LANCER_SIZE)
+                   TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, PEASANT_SIZE, PEASANT_SPEED, UIBARHEIGHT, LANCER_SPEED, LANCER_SIZE, TELEPORTER_SIZE)
 
 class Trogdor:
     def __init__(self):
@@ -76,6 +76,7 @@ class Peasant:
     def draw(self, screen):
         # Draw Peasant on the screen
         pygame.draw.rect(screen, GREEN, (self.x, self.y, self.size, self.size))
+
 class Knight:
     def __init__(self):
         # Initialize Knight's position, size, speed, and movement direction
@@ -138,8 +139,8 @@ class House:
 class Guardian:
     def __init__(self, house):
         #Intailize with house spawn, center being a house
-        self.x = house.x +5
-        self.y = house.y -50
+        self.x = house.x + 5
+        self.y = house.y - 50
         self.size = KNIGHT_SIZE
         self.speed = KNIGHT_SPEED - .25
     
@@ -153,6 +154,30 @@ class Guardian:
     def draw(self, screen):
         #Draw guardian on screen
         pygame.draw.rect(screen, PURPLE, (self.x, self.y, self.size, self.size))
+
+class Teleporter:
+    def __init__(self):
+        # Initialize Trogdor's position, size, speed, and other attributes
+        self.x = random.randint(0, WIDTH - HOUSE_SIZE)
+        self.y = random.randint(UIBARHEIGHT, HEIGHT - HOUSE_SIZE)
+        self.size = TELEPORTER_SIZE
+        self.jumpsize = 100
+
+    def move(self, trogdor):
+        # Move Trogdor within the screen boundaries
+        angle = math.atan2(trogdor.y - self.y, trogdor.x - self.x)
+        dx = math.cos(angle) * self.jumpsize
+        dy = math.sin(angle) * self.jumpsize
+        if ((abs(dx) > abs(self.x - trogdor.x)) & (abs(dy) > abs(self.y - trogdor.y))):
+            self.x = trogdor.x
+            self.y = trogdor.y
+        else:
+            self.x = max(0, min(WIDTH - self.size, self.x + dx))
+            self.y = max(UIBARHEIGHT, min(HEIGHT - self.size, self.y + dy))
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, DARKGREEN, (self.x, self.y, self.size, self.size)) # Body
+
 
 class Projectile:
     def __init__(self, x, y, angle, size):

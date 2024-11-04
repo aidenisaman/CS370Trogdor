@@ -173,7 +173,7 @@ class Projectile:
 class Lancer:
     def __init__(self):
         self.x = random.randint(0, WIDTH - LANCER_SIZE)
-        self.y = random.randint(0, HEIGHT - LANCER_SIZE)
+        self.y = random.randint(UIBARHEIGHT, HEIGHT - LANCER_SIZE)
         self.size = LANCER_SIZE
         self.speed = LANCER_SPEED
         self.direction = None
@@ -194,7 +194,7 @@ class Lancer:
         if self.moving and self.direction is not None:
             if self.movement_axis == "vertical":
                 if self.direction == "up":
-                    self.y = max(0, self.y - self.speed)
+                    self.y = max(UIBARHEIGHT, self.y - self.speed)
                 elif self.direction == "down":
                     self.y = min(HEIGHT - self.size, self.y + self.speed)
             elif self.movement_axis == "horizontal":

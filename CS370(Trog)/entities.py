@@ -14,8 +14,8 @@ import random
 import math
 from utils import (HOUSE_HEALTH, HOUSE_SIZE, KNIGHT_CHASE_PROBABILITY, KNIGHT_DIRECTION_CHANGE_INTERVAL,
                    KNIGHT_SIZE, KNIGHT_SPEED, MERLIN_PROJECTILE_SPEED, PEASANT_DIRECTION_CHANGE_INTERVAL,
-                   WIDTH, HEIGHT, RED, DARKGREEN, GREEN, BLUE, YELLOW, ORANGE, PURPLE, WHITE, BLACK, TROGDOR_SIZE, TROGDOR_SPEED,
-                   TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, PEASANT_SIZE, PEASANT_SPEED, UIBARHEIGHT)
+                   WIDTH, HEIGHT, RED, DARKGREEN, DARKORANGE, GREEN, BLUE, YELLOW, ORANGE, PURPLE, WHITE, BLACK, TROGDOR_SIZE, TROGDOR_SPEED,
+                   TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, PEASANT_SIZE, PEASANT_SPEED, UIBARHEIGHT, LANCER_SPEED, LANCER_SIZE)
 
 class Trogdor:
     def __init__(self):
@@ -153,6 +153,7 @@ class Guardian:
     def draw(self, screen):
         #Draw guardian on screen
         pygame.draw.rect(screen, PURPLE, (self.x, self.y, self.size, self.size))
+
 class Projectile:
     def __init__(self, x, y, angle, size):
         self.x = x
@@ -167,3 +168,68 @@ class Projectile:
 
     def draw(self, screen):
         pygame.draw.circle(screen, YELLOW, (int(self.x), int(self.y)), self.size)
+
+
+class Lancer:
+    def __init__(self):
+        self.x = random.randint(0, WIDTH - LANCER_SIZE)
+        self.y = random.randint(UIBARHEIGHT, HEIGHT - LANCER_SIZE)
+        self.size = LANCER_SIZE
+        self.speed = LANCER_SPEED
+        self.direction = None
+        self.moving = False
+        
+        # Randomly assign movement to either horizontal or vertical
+        self.movement_axis = random.choice(["horizontal", "vertical"])
+
+    def move(self, trogdor):
+        # Check if the Lancer is in line of sight based on its movement axis
+        if self.is_in_line_of_sight(trogdor):
+            self.set_direction(trogdor)
+            self.moving = True
+        else:
+            self.moving = False
+
+        # Move only along the assigned axis (horizontal or vertical)
+        if self.moving and self.direction is not None:
+            if self.movement_axis == "vertical":
+                if self.direction == "up":
+                    self.y = max(UIBARHEIGHT, self.y - self.speed)
+                elif self.direction == "down":
+                    self.y = min(HEIGHT - self.size, self.y + self.speed)
+            elif self.movement_axis == "horizontal":
+                if self.direction == "left":
+                    self.x = max(0, self.x - self.speed)
+                elif self.direction == "right":
+                    self.x = min(WIDTH - self.size, self.x + self.speed)
+
+    def is_in_line_of_sight(self, trogdor):
+        # Vertical Lancers check if Trogdor is in the same column
+        # Horizontal Lancers check if Trogdor is in the same row
+        if self.movement_axis == "vertical":
+            return abs(self.x - trogdor.x) <= self.size
+        elif self.movement_axis == "horizontal":
+            return abs(self.y - trogdor.y) <= self.size
+
+    def set_direction(self, trogdor):
+        # Set the direction based on whether the Lancer is horizontal or vertical
+        if self.movement_axis == "vertical":
+            if trogdor.y > self.y:
+                self.direction = "down"
+            else:
+                self.direction = "up"
+        elif self.movement_axis == "horizontal":
+            if trogdor.x > self.x:
+                self.direction = "right"
+            else:
+                self.direction = "left"
+
+    def draw(self, screen):
+        # Draw the Lancer on the screen as a rectangle
+      if self.movement_axis == "vertical":
+        pygame.draw.rect(screen, DARKORANGE, (self.x, self.y, self.size, self.size))
+        pygame.draw.rect(screen, BLACK, (self.x + 5, self.y, self.size/2, self.size))
+      elif self.movement_axis == "horizontal":
+        pygame.draw.rect(screen, DARKORANGE, (self.x, self.y, self.size, self.size))
+        pygame.draw.rect(screen, BLACK, (self.x, self.y + 5, self.size, self.size/2))
+          

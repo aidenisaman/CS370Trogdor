@@ -228,6 +228,8 @@ class Lancer:
         # Draw the Lancer on the screen as a rectangle
       if self.movement_axis == "vertical":
         pygame.draw.rect(screen, DARKORANGE, (self.x, self.y, self.size, self.size))
+        pygame.draw.rect(screen, BLACK, (self.x + 5, self.y, self.size/2, self.size))
       elif self.movement_axis == "horizontal":
-        pygame.draw.rect(screen, WHITE, (self.x, self.y, self.size, self.size))
+        pygame.draw.rect(screen, DARKORANGE, (self.x, self.y, self.size, self.size))
+        pygame.draw.rect(screen, BLACK, (self.x, self.y + 5, self.size, self.size/2))
           

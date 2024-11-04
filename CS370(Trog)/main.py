@@ -44,7 +44,7 @@ def initialize_game(level):
     guardians = []
     for _ in range(level + 1) if level not in [5,10] else []:
         guardians.append(Guardian(random.choice(houses)))
-    lancers = [Lancer() for _ in range(min(level, 5))] if level not in [5, 10] else []
+    lancers = [Lancer() for _ in range(min(level, 4))] if level not in [5, 10] else []
     boss = None
     projectiles = []
 

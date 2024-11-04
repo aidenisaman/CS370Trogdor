@@ -182,7 +182,7 @@ def game_loop(screen):
                             game_stats['timeH'] = 0
                             spawn_time = 0
                             jump_time = 0
-                            trogdor, houses, peasants, knights, guardians, lancers boss, projectiles, teleporters = initialize_game(game_state['level'])
+                            trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters = initialize_game(game_state['level'])
                     
                  # Check for collisions with Trogdor
         if Is_Invulerable(game_stats['timeM'], spawn_time):         

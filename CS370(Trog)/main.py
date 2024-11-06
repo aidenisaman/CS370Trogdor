@@ -16,14 +16,14 @@ from utils import (BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, O
                    YELLOW, GAME_TIME_F, GAME_TIME_S, GAME_TIME_M, GAME_TIME_H, UIBARHEIGHT)
 from ui import (start_screen, show_congratulations_screen, pause_game, game_over, load_sound,
                 play_music, draw_background, initialize_background_images, draw_burnination_bar) 
-
+from leaderboard import Leaderboard, show_leaderboard_screen, get_player_name
 
 # Initialize Pygame
 pygame.init()
 pygame.mixer.init()
 
 # Set up the display
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 1024, 768
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Trogdor 2: Return of the Burninator")
 
@@ -37,6 +37,7 @@ splat_noise.set_volume(.25)
 slash_noise.set_volume(.25)
 
 def initialize_game(level):
+    print("Initializing game with level:", level)
     trogdor = Trogdor()
     houses = [House() for _ in range(level + 2)] if level not in [5, 10] else []
     peasants = [] if level not in [5, 10] else []
@@ -95,6 +96,7 @@ def game_loop(screen):
     jump_time = 0
 
     # Create a clock object to control the frame rate
+    game_completed = False
     running = True
     clock = pygame.time.Clock()
     
@@ -103,7 +105,7 @@ def game_loop(screen):
         # Event handling
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return False  # Exit the game loop if the window is closed
+                return False, game_stats  # Exit the game loop if the window is closed
         # Start of every level play bell_noise    
         if level_cnt < game_state['level']: 
             bell_noise.play()
@@ -117,6 +119,7 @@ def game_loop(screen):
         if keys[pygame.K_ESCAPE]:
             if pause_game(screen) == "exit":
                 running = False
+                return False, game_stats
                 
         # User input for movement wasd and arrow keys
         if keys[pygame.K_UP] | keys[pygame.K_DOWN] | keys[pygame.K_LEFT] | keys[pygame.K_RIGHT]:
@@ -170,7 +173,7 @@ def game_loop(screen):
                     trogdor.burnination_mode = False
                     if game_state['lives'] <= 0:
                         if game_over(screen) == "exit": # If they select exit, exit game
-                            running = False
+                             return False, game_stats
                         else: # Else restart game from level 1
                             game_state['level'] = 1
                             game_state['lives'] = 3
@@ -323,7 +326,8 @@ def game_loop(screen):
                     game_state['level'] += 1
                     if game_state['level'] > 10:
                         show_congratulations_screen(screen)
-                        return True  # Game completed
+                        game_completed = True
+                        return game_completed, game_stats
 
                     trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters = initialize_game(game_state['level'])
                     game_state = select_power_up(screen, trogdor, game_state,int(game_stats['timeH']),game_stats['timeM'],game_stats['timeS'])
@@ -397,12 +401,12 @@ def game_loop(screen):
         level_text = font.render(f"Level: {game_state['level']}", True, WHITE)
         time_text = font.render(f"Time: {game_stats['timeH']}:{game_stats['timeM']}:{game_stats['timeS']}",True ,WHITE)
         burnination_text = font.render("BURNINATION!" if trogdor.burnination_mode else "", True, ORANGE)
-        screen.blit(lives_text, (10, 10))
-        screen.blit(peasants_text, (125, 10))
-        screen.blit(houses_text, (325, 10))
-        screen.blit(level_text, (500, 10))
-        screen.blit(time_text,(625, 10))
-        screen.blit(burnination_text, (HEIGHT // 2, 45))
+        screen.blit(lives_text, (20, 15))
+        screen.blit(peasants_text, (200, 15))
+        screen.blit(houses_text, (450, 15))
+        screen.blit(level_text, (700, 15))
+        screen.blit(time_text,(850, 15))
+        screen.blit(burnination_text, (WIDTH // 2 - burnination_text.get_width() // 2, UIBARHEIGHT + 10))
         
         if boss:
             boss_text = font.render(f"BOSS: {type(boss).__name__}", True, RED)
@@ -431,25 +435,34 @@ def game_loop(screen):
             game_stats['timeH']+= 1
             game_stats['timeM'] = 0
 
-    return False
+    return game_completed, game_stats
 
+def test_mode():
+    # Simulate completing the game with a random time
+    import random
+    return {
+        'timeH': random.randint(0, 0),
+        'timeM': random.randint(0, 59),
+        'timeS': random.randint(0, 59)
+    }
 
 def main():
     # Initialize Pygame
+    print("Starting main function")
     pygame.init()
     
     # Initialize the display
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Trogdor 2: Retrun of the Burninator")
+    print("hello")
+    pygame.display.set_caption("Trogdor 2: Return of the Burninator")
     
     # Initialize background images
     initialize_background_images()
     
+    #initialize leaderboard
+    leaderboard = Leaderboard()
     running = True
     while running:
-       
-        
-        # Try to draw the menu background, fall back to black if it fails
         try:
             draw_background(screen, 'menu')
         except Exception as e:
@@ -460,21 +473,37 @@ def main():
         print(f"User chose: {choice}")  # Debug print
         
         if choice == "start":
-
-            print("Starting game loop...")  # Debug print
+            print("Starting game loop...")
             play_music(0)
-
-            game_loop(screen)
+            game_completed, game_stats = game_loop(screen)
+            
+            if game_completed:  # Only check for high score if game was completed
+                if leaderboard.check_if_highscore(game_stats):
+                    name = get_player_name(screen)
+                    if name:
+                        leaderboard.add_entry(name, game_stats)
+                show_congratulations_screen(screen)
+        elif choice == "test":
+            # Simulate completing the game
+            game_stats = test_mode()
+            if leaderboard.check_if_highscore(game_stats):
+                name = get_player_name(screen)
+                if name:
+                    leaderboard.add_entry(name, game_stats)
+            show_congratulations_screen(screen)
+        elif choice == "leaderboard":
+            show_leaderboard_screen(screen, leaderboard)
         elif choice == "exit":
-            print("Exiting game...")  # Debug print
             running = False
 
     pygame.quit()
-    print("Game closed.")  # Debug print
 
 if __name__ == "__main__":
     try:
+        print("Starting main")  # Debug print
         main()
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"Error in main: {e}")  # Debug print
+        import traceback
+        traceback.print_exc()  # This will print the full error trace
         pygame.quit()

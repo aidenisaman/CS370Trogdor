@@ -148,16 +148,16 @@ def draw_button(screen, text, x, y, width, height, color, text_color):
 def start_screen(screen):
     # Create a font object for the title
     play_music(1) # Starts main theme
-    title_font = pygame.font.Font(None, MENU_FONT_SIZE * 3 // 2)  # Slightly smaller than before to fit
-    subtitle_font = pygame.font.Font(None, MENU_FONT_SIZE)
+    title_font = pygame.font.Font(None, int(MENU_FONT_SIZE * 2))
+    subtitle_font = pygame.font.Font(None, int(MENU_FONT_SIZE * 1.5))
     
     # Render the title text onto surfaces
     title1 = title_font.render("Trogdor 2", True, RED)
     title2 = subtitle_font.render("Return of the Burninator", True, RED)
     
-    # Calculate positions to center the title
-    title1_pos = (WIDTH/2 - title1.get_width()/2, HEIGHT/4)
-    title2_pos = (WIDTH/2 - title2.get_width()/2, HEIGHT/4 + title1.get_height())
+    # Move titles higher up
+    title1_pos = (WIDTH/2 - title1.get_width()/2, HEIGHT/6)  # Changed from HEIGHT/5
+    title2_pos = (WIDTH/2 - title2.get_width()/2, HEIGHT/6 + title1.get_height())
     
     # Blit the title surfaces onto the screen
     screen.blit(title1, title1_pos)
@@ -166,43 +166,48 @@ def start_screen(screen):
     # Define the buttons with their text and colors
     buttons = [
         ("Start", GREEN),
+        ("Leaderboard", RED),
+        ("Test Mode", YELLOW),
         ("Exit", BLUE)
     ]
 
-    # Set the initial y-coordinate for the first button
-    button_y = HEIGHT/2 + title1.get_height()  # Moved down slightly to accommodate larger title
+    # Start buttons higher up with more consistent spacing
+    button_y = HEIGHT * 0.4  # Start at 40% of screen height
+    BUTTON_SPACING = BUTTON_HEIGHT + 20  # Reduced spacing a bit
     
     # Draw each button on the screen
     for text, color in buttons:
         draw_button(screen, text, WIDTH/2 - BUTTON_WIDTH/2, button_y, BUTTON_WIDTH, BUTTON_HEIGHT, color, WHITE)
-        # Move the y-coordinate down for the next button
-        button_y += BUTTON_HEIGHT + BUTTON_PADDING
+        button_y += BUTTON_SPACING
 
-    # Update the display to show the buttons and title
     pygame.display.flip()
 
-    # Event loop to handle user interactions
+    # Event loop
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return "exit"
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
-                button_y = HEIGHT/2 + title1.get_height()  # Reset button_y for collision detection
+                button_y = HEIGHT * 0.4  # Match the starting position above
                 for text, _ in buttons:
                     button_rect = pygame.Rect(WIDTH/2 - BUTTON_WIDTH/2, button_y, BUTTON_WIDTH, BUTTON_HEIGHT)
                     if button_rect.collidepoint(mouse_pos):
                         if text == "Start":
                             return "start"
+                        elif text == "Leaderboard":
+                            return "leaderboard"
+                        elif text == "Test Mode":
+                            return "test"
                         elif text == "Exit":
                             return "exit"
-                    button_y += BUTTON_HEIGHT + BUTTON_PADDING
+                    button_y += BUTTON_SPACING
 
 def show_congratulations_screen(screen):
     screen.fill(BLACK)
-    font = pygame.font.Font(None, 48)
-    congrats_text = font.render("Congratulations!  You've defeated the Dragon King!", True, YELLOW)
-    future_text = font.render("You are the ultimate Burninator!", True, WHITE)
+    font = pygame.font.Font(None, 56)
+    congrats_text = font.render("Congratulations!  The Dragon King has died of old age!", True, YELLOW)
+    future_text = font.render("You are the true Burninator!", True, WHITE)
     screen.blit(congrats_text, (WIDTH // 2 - congrats_text.get_width() // 2, HEIGHT // 2 - 50))
     screen.blit(future_text, (WIDTH // 2 - future_text.get_width() // 2, HEIGHT // 2 + 50))
     pygame.display.flip()
@@ -289,12 +294,12 @@ def game_over(screen):
     ]
 
     # Set the initial y-coordinate for the first button
-    button_y = HEIGHT / 2
+    button_y = HEIGHT / 2 + 50
 
     # Draw each button on the screen
     for text, color in buttons:
-        draw_button(screen, text, WIDTH / 2 - BUTTON_WIDTH / 2, button_y, BUTTON_WIDTH, BUTTON_HEIGHT, color, WHITE)
-        # Move the y-coordinate down for the next button
+        draw_button(screen, text, WIDTH / 2 - BUTTON_WIDTH / 2, button_y, 
+                   BUTTON_WIDTH, BUTTON_HEIGHT, color, WHITE)
         button_y += BUTTON_HEIGHT + BUTTON_PADDING
 
     # Update the display to show the buttons and title
@@ -323,8 +328,8 @@ def game_over(screen):
 
 def draw_burnination_bar(screen, trogdor, burnination_duration):
     # Draw the burnination bar on the screen
-    bar_width = 200
-    bar_height = 20
+    bar_width = 300  # Increased from 200
+    bar_height = 25  # Increased from 20
     fill_width = bar_width * (trogdor.burnination_timer / burnination_duration)
-    pygame.draw.rect(screen, RED, (HEIGHT // 2 - 10, 70, bar_width, bar_height), 2)
-    pygame.draw.rect(screen, ORANGE, (HEIGHT // 2 - 10, 70, fill_width, bar_height))
+    pygame.draw.rect(screen, RED, (WIDTH // 2 - bar_width // 2, 90, bar_width, bar_height), 2)
+    pygame.draw.rect(screen, ORANGE, (WIDTH // 2 - bar_width // 2, 90, fill_width, bar_height))

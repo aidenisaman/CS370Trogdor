@@ -134,29 +134,29 @@ class Lancelot:
     def draw_health_bar(self, screen):
         health_ratio = self.health / self.max_health
         bar_width = BOSS_HEALTH_BAR_WIDTH * health_ratio
-        
+    
         # Draw border
         pygame.draw.rect(screen, WHITE, ((WIDTH - BOSS_HEALTH_BAR_WIDTH) // 2 - BOSS_HEALTH_BAR_BORDER, 
-                                         HEIGHT - 50 - BOSS_HEALTH_BAR_BORDER, 
-                                         BOSS_HEALTH_BAR_WIDTH + 2 * BOSS_HEALTH_BAR_BORDER, 
-                                         BOSS_HEALTH_BAR_HEIGHT + 2 * BOSS_HEALTH_BAR_BORDER))
-        
+                                        HEIGHT - 80 - BOSS_HEALTH_BAR_BORDER,  # Moved up slightly
+                                        BOSS_HEALTH_BAR_WIDTH + 2 * BOSS_HEALTH_BAR_BORDER, 
+                                        BOSS_HEALTH_BAR_HEIGHT + 2 * BOSS_HEALTH_BAR_BORDER))
+    
         # Draw background
         pygame.draw.rect(screen, BLACK, ((WIDTH - BOSS_HEALTH_BAR_WIDTH) // 2, 
-                                         HEIGHT - 50, 
-                                         BOSS_HEALTH_BAR_WIDTH, 
-                                         BOSS_HEALTH_BAR_HEIGHT))
-        
+                                        HEIGHT - 80, 
+                                        BOSS_HEALTH_BAR_WIDTH, 
+                                        BOSS_HEALTH_BAR_HEIGHT))
+    
         # Draw health
         pygame.draw.rect(screen, RED, ((WIDTH - BOSS_HEALTH_BAR_WIDTH) // 2, 
-                                       HEIGHT - 50, 
-                                       bar_width, 
-                                       BOSS_HEALTH_BAR_HEIGHT))
-        
+                                        HEIGHT - 80, 
+                                        bar_width, 
+                                        BOSS_HEALTH_BAR_HEIGHT))
+    
         # Draw boss name
-        font = pygame.font.Font(None, 24)
-        name_text = font.render("Lancelot, the Mad", True, WHITE)
-        screen.blit(name_text, ((WIDTH - name_text.get_width()) // 2, HEIGHT - 80))
+        font = pygame.font.Font(None, 36)  # Increased font size
+        name_text = font.render(f"Boss: {type(self).__name__}", True, WHITE)
+        screen.blit(name_text, ((WIDTH - name_text.get_width()) // 2, HEIGHT - 120))
 
 
 class DragonKing:

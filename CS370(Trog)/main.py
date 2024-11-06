@@ -69,7 +69,7 @@ def game_loop(screen):
     game_state = {
         'level': 1,
         'houses_crushed': 0,
-        'lives': INITIAL_LIVES,
+        'lives': 300,
         'burnination_threshold': INITIAL_BURNINATION_THRESHOLD,
         'burnination_duration': BURNINATION_DURATION
     }
@@ -287,10 +287,26 @@ def game_loop(screen):
         if boss:
             if isinstance(boss, Merlin):
                 boss.update(trogdor, projectiles)
-            elif isinstance(boss, DragonKing):
-                boss.update(trogdor)
+                # Merlin collision check
+                if (abs(trogdor.x - boss.x) < trogdor.size + boss.size and
+                    abs(trogdor.y - boss.y) < trogdor.size + boss.size):
+                    boss.take_damage()
+                if boss.health <= 0:
+                    boss = None
+                    game_state['level'] += 1
+                    trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters = initialize_game(game_state['level'])
+                    game_state = select_power_up(screen, trogdor, game_state,int(game_stats['timeH']),game_stats['timeM'],game_stats['timeS'])
+        elif isinstance(boss, DragonKing):
+            boss.update(trogdor)
+            if boss.should_die():
+                boss = None
+                game_state['level'] += 1
+                if game_state['level'] > 10:
+                    show_congratulations_screen(screen)
+                    game_completed = True
+                    return game_completed, game_stats
+            else:
                 for fx, fy, _ in boss.fire_breath:
-
                     if Is_Invulerable(game_stats['timeS'], spawn_time):
                         if (abs(trogdor.x + trogdor.size/2 - fx) < trogdor.size/2 + 5 and
                             abs(trogdor.y + trogdor.size/2 - fy) < trogdor.size/2 + 5):
@@ -305,7 +321,6 @@ def game_loop(screen):
                                 else:
                                     game_state['level'] = 1
                                     game_state['lives'] = INITIAL_LIVES
-                                    #reset time variables
                                     game_stats['timeF'] = 0
                                     game_stats['timeS'] = 0
                                     game_stats['timeM'] = 0
@@ -437,14 +452,123 @@ def game_loop(screen):
 
     return game_completed, game_stats
 
-def test_mode():
-    # Simulate completing the game with a random time
-    import random
-    return {
-        'timeH': random.randint(0, 0),
-        'timeM': random.randint(0, 59),
-        'timeS': random.randint(0, 59)
+def test_mode(screen):
+    # Initialize game state with basic parameters
+    game_state = {
+        'level': 10,  # Set to level 10 for Dragon King
+        'houses_crushed': 0,
+        'lives': INITIAL_LIVES,
+        'burnination_threshold': INITIAL_BURNINATION_THRESHOLD,
+        'burnination_duration': BURNINATION_DURATION
     }
+
+    game_stats = {
+        'timeF': 0,
+        'timeS': 0,
+        'timeM': 0,
+        'timeH': 0
+    }
+    
+    # Initialize only necessary game objects for boss fight
+    trogdor = Trogdor()
+    boss = DragonKing()
+    
+    # Initialize empty lists for other game objects since it's just boss fight
+    houses = []
+    peasants = []
+    knights = []
+    guardians = []
+    lancers = []
+    projectiles = []
+    teleporters = []
+    
+    # Set up game loop variables
+    running = True
+    game_completed = False
+    clock = pygame.time.Clock()
+    spawn_time = 0
+    
+    play_music(0)  # Start game music
+
+    while running:
+        # Event handling
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return False, game_stats
+
+        keys = pygame.key.get_pressed()
+        
+        # Pause if escape is pressed
+        if keys[pygame.K_ESCAPE]:
+            if pause_game(screen) == "exit":
+                return False, game_stats
+
+        # User input for movement
+        if keys[pygame.K_UP] | keys[pygame.K_DOWN] | keys[pygame.K_LEFT] | keys[pygame.K_RIGHT]:
+            trogdor.move(keys[pygame.K_RIGHT] - keys[pygame.K_LEFT],
+                        keys[pygame.K_DOWN] - keys[pygame.K_UP])
+        elif keys[pygame.K_w] | keys[pygame.K_s] | keys[pygame.K_a] | keys[pygame.K_d]:
+            trogdor.move(keys[pygame.K_d] - keys[pygame.K_a],
+                        keys[pygame.K_s] - keys[pygame.K_w])
+
+        # Update boss
+        if boss:
+            boss.update(trogdor)
+            if boss.should_die():
+                boss = None
+                show_congratulations_screen(screen)
+                game_completed = True
+                return game_completed, game_stats
+            else:
+                for fx, fy, _ in boss.fire_breath:
+                    if Is_Invulerable(game_stats['timeS'], spawn_time):
+                        if (abs(trogdor.x + trogdor.size/2 - fx) < trogdor.size/2 + 5 and
+                            abs(trogdor.y + trogdor.size/2 - fy) < trogdor.size/2 + 5):
+                            slash_noise.play()
+                            game_state['lives'] -= 1
+                            trogdor.peasants_stomped = 0
+                            spawn_time = game_stats['timeS']
+                            trogdor.burnination_mode = False
+                            if game_state['lives'] <= 0:
+                                if game_over(screen) == "exit":
+                                    return False, game_stats
+                                else:
+                                    return False, game_stats
+
+        # Drawing
+        screen.fill(BLACK)
+        draw_background(screen, 'level')
+        pygame.draw.rect(screen, BLACK, (0, 0, WIDTH, UIBARHEIGHT), 0)
+
+        if boss:
+            boss.draw(screen)
+        trogdor.draw(screen)
+
+        # UI
+        font = pygame.font.Font(None, 36)
+        lives_text = font.render(f"Lives: {game_state['lives']}", True, RED)
+        level_text = font.render("Test Mode: Dragon King Fight", True, WHITE)
+        time_text = font.render(f"Time: {game_stats['timeH']}:{game_stats['timeM']}:{game_stats['timeS']}", True, WHITE)
+        
+        screen.blit(lives_text, (20, 15))
+        screen.blit(level_text, (200, 15))
+        screen.blit(time_text, (850, 15))
+
+        pygame.display.flip()
+        clock.tick(FPS)
+
+        # Update time
+        game_stats['timeF'] += 1
+        if game_stats['timeF'] >= FPS:
+            game_stats['timeS'] += 1
+        if game_stats['timeS'] >= 60:
+            game_stats['timeM'] += 1
+            game_stats['timeS'] = 0
+        if game_stats['timeM'] >= 60:
+            game_stats['timeH'] += 1
+            game_stats['timeM'] = 0
+
+    return game_completed, game_stats
 
 def main():
     # Initialize Pygame
@@ -484,10 +608,11 @@ def main():
                         leaderboard.add_entry(name, game_stats)
                 show_congratulations_screen(screen)
         elif choice == "test":
-            # Simulate completing the game
-            game_stats = test_mode()
-            if leaderboard.check_if_highscore(game_stats):
-                name = get_player_name(screen)
+            print("Starting Dragon King test fight...")
+            game_completed, game_stats = test_mode(screen)  # Use the new test_mode function
+            if game_completed:  # Only check for high score if game was completed
+                if leaderboard.check_if_highscore(game_stats):
+                 name = get_player_name(screen)
                 if name:
                     leaderboard.add_entry(name, game_stats)
             show_congratulations_screen(screen)

@@ -296,7 +296,7 @@ def game_loop(screen):
                     game_state['level'] += 1
                     trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters = initialize_game(game_state['level'])
                     game_state = select_power_up(screen, trogdor, game_state,int(game_stats['timeH']),game_stats['timeM'],game_stats['timeS'])
-        elif isinstance(boss, DragonKing):
+        if isinstance(boss, DragonKing):
             boss.update(trogdor)
             if boss.should_die():
                 boss = None

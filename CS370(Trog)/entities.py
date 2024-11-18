@@ -33,9 +33,13 @@ class Trogdor:
         self.x = max(0, min(WIDTH - self.size, self.x + dx * self.speed))
         self.y = max(UIBARHEIGHT, min(HEIGHT - self.size, self.y + dy * self.speed))
 
-    def draw(self, screen):
+    def draw(self, screen, is_invincible):
         # Draw Trogdor on the screen, changing color if in burnination mode
         color = ORANGE if self.burnination_mode else RED
+        if 0 == is_invincible:
+            # Add pulsing effect during invincibility
+            pulse = abs(math.sin(pygame.time.get_ticks() * 0.01)) * 255
+            color = (min(color[0], pulse), min(color[1], pulse), min(color[2], pulse))
         pygame.draw.rect(screen, color, (self.x, self.y, self.size, self.size)) # Body
         pygame.draw.circle(screen, WHITE, (self.x + 5, self.y + 7), 5) # Eyes
         pygame.draw.circle(screen, WHITE, (self.x + 15, self.y + 7), 5)

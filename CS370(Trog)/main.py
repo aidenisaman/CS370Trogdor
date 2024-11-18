@@ -69,7 +69,7 @@ def game_loop(screen):
     game_state = {
         'level': 1,
         'houses_crushed': 0,
-        'lives': 300,
+        'lives': 3,
         'burnination_threshold': INITIAL_BURNINATION_THRESHOLD,
         'burnination_duration': BURNINATION_DURATION
     }
@@ -405,7 +405,7 @@ def game_loop(screen):
             teleporter.draw(screen)
         if boss:
             boss.draw(screen)
-        trogdor.draw(screen)
+        trogdor.draw(screen, Is_Invulerable(game_stats['timeM'], spawn_time))
         
         # UI
         # Should eventually be moved into UI with a UI function doing this

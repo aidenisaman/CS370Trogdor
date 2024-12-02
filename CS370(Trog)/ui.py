@@ -167,7 +167,7 @@ def start_screen(screen):
     buttons = [
         ("Start", GREEN),
         ("Leaderboard", RED),
-        #("Test",YELLOW)
+        #("Test Mode",YELLOW) #Boss mode was commented as its for testing purposes only
         ("Tutorial", BLACK),
         ("Credits", BLACK),
         ("Exit", BLUE)
@@ -212,6 +212,7 @@ def show_tutorial_screen(screen):
     draw_background(screen, 'tutorial')
     pygame.display.flip()
     waiting = True
+    # used the congratulatns screen logic for this, it was better and saved me a headache
     while waiting:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -223,6 +224,7 @@ def show_credit_screen(screen):
     draw_background(screen, 'credits')
     pygame.display.flip()
     waiting = True
+    # used the congratulatns screen logic for this, it was better and saved me a headache
     while waiting:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

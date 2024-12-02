@@ -96,7 +96,7 @@ BACKGROUND_IMAGES = None
 
 def load_background_images():
     backgrounds = {}
-    for bg_type, filename in [('menu', 'menu.webp'), ('level', 'levelGray.webp'), ('powerupMenu', 'level.webp')]:
+    for bg_type, filename in [('menu', 'menu.webp'), ('level', 'levelGray.webp'), ('powerupMenu', 'level.webp'),('credits','credits.webp'),('tutorial','tutorial.webp')]:
         image = load_image(filename)
         if image:
             backgrounds[bg_type] = image
@@ -167,7 +167,9 @@ def start_screen(screen):
     buttons = [
         ("Start", GREEN),
         ("Leaderboard", RED),
-        ("Test Mode", YELLOW),
+        #("Test",YELLOW)
+        ("Tutorial", BLACK),
+        ("Credits", BLACK),
         ("Exit", BLUE)
     ]
 
@@ -201,7 +203,33 @@ def start_screen(screen):
                             return "test"
                         elif text == "Exit":
                             return "exit"
+                        elif text == "Credits":
+                            return "credits"
+                        elif text == "Tutorial":
+                            return "tutorial"
                     button_y += BUTTON_SPACING
+def show_tutorial_screen(screen):
+    draw_background(screen, 'tutorial')
+    pygame.display.flip()
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return
+            if event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
+                waiting = False
+
+def show_credit_screen(screen):
+    draw_background(screen, 'credits')
+    pygame.display.flip()
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return
+            if event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
+                waiting = False
+    
 
 def show_congratulations_screen(screen):
     screen.fill(BLACK)

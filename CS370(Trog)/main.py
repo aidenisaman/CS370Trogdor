@@ -15,7 +15,7 @@ from utils import (BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, O
                    RED,TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, WHITE, WIDTH, HEIGHT, BLACK, FPS, INITIAL_LIVES,
                    YELLOW, GAME_TIME_F, GAME_TIME_S, GAME_TIME_M, GAME_TIME_H, UIBARHEIGHT)
 from ui import (start_screen, show_congratulations_screen, pause_game, game_over, load_sound,
-                play_music, draw_background, initialize_background_images, draw_burnination_bar) 
+                play_music, draw_background, initialize_background_images, draw_burnination_bar,show_credit_screen,show_tutorial_screen) 
 from leaderboard import Leaderboard, show_leaderboard_screen, get_player_name
 
 # Initialize Pygame
@@ -618,6 +618,10 @@ def main():
             show_congratulations_screen(screen)
         elif choice == "leaderboard":
             show_leaderboard_screen(screen, leaderboard)
+        elif choice == "credits":
+            show_credit_screen(screen)
+        elif choice == "tutorial":
+            show_tutorial_screen(screen)
         elif choice == "exit":
             running = False
 

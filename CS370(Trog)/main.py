@@ -63,6 +63,7 @@ def initialize_game(level):
         guardians = []
         for _ in range(level + 1):
             guardians.append(Guardian(random.choice(houses)))
+        lancers = []
         boss = None
         projectiles = []
         teleporters = []
@@ -73,6 +74,7 @@ def initialize_game(level):
         guardians = []
         for _ in range(level + 1):
             guardians.append(Guardian(random.choice(houses)))
+        lancers = [Lancer() for _ in range(min(level, 4))]
         boss = None
         projectiles = []
         teleporters = []
@@ -84,6 +86,7 @@ def initialize_game(level):
         guardians = []
         for _ in range(level + 1):
             guardians.append(Guardian(random.choice(houses)))
+        lancers = [Lancer() for _ in range(min(level, 4))]
         boss = None
         projectiles = []
         teleporters = [Teleporter() for _ in range(min(level, 1))]

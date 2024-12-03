@@ -67,6 +67,7 @@ def initialize_game(level):
         boss = None
         projectiles = []
         teleporters = []
+
     elif level < 10: # Section 2 adds lancer TODO Trapper
         houses = [House() for _ in range(level + 2)]
         peasants = []
@@ -74,7 +75,7 @@ def initialize_game(level):
         guardians = []
         for _ in range(level + 1):
             guardians.append(Guardian(random.choice(houses)))
-        lancers = [Lancer() for _ in range(min(level, 4))]
+        lancers = [Lancer() for _ in range(min(level - 9, 4))]
         boss = None
         projectiles = []
         teleporters = []
@@ -96,7 +97,7 @@ def initialize_game(level):
     return trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters
 
 def Is_Invulerable(current_time, spawn_time):
-    if (spawn_time + 2 < current_time): # If your spawn time + two seconds is less than current time invulerable
+    if (spawn_time + 300 < current_time): # If your spawn time + two seconds is less than current time invulerable
         return True
     return False
 
@@ -137,11 +138,11 @@ def game_loop(screen):
                 pygame.quit()
                 return False, game_stats
 
-        # Start of every level play bell_noise    
+        # Start of every level play bell_noise and set spawn time to current time  
         if level_cnt < game_state['level']: 
             bell_noise.play()
             level_cnt = game_state['level']
-            spawn_time = game_stats['timeM']
+            spawn_time = game_stats['timeF']
 
         # Handle player input
         keys = pygame.key.get_pressed()        

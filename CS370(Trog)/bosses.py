@@ -30,8 +30,17 @@ class Merlin:
         self.health = self.max_health
         self.projectile_cooldown = 0
         self.projectile_size = MERLIN_PROJECTILE_SIZE
+        self.invulnerable = False
+        self.invulnerable_timer = 0
+        self.invulnerable_duration = 60  # 1 second at 60 FPS
 
     def update(self, trogdor, projectiles):
+        # Update invulnerability
+        if self.invulnerable:
+            self.invulnerable_timer -= 1
+            if self.invulnerable_timer <= 0:
+                self.invulnerable = False
+        
         self.projectile_cooldown -= 1
         if self.projectile_cooldown <= 0:
             self.fire_projectile(trogdor, projectiles)
@@ -42,9 +51,12 @@ class Merlin:
         projectiles.append(Projectile(self.x + self.size // 2, self.y + self.size // 2, angle, self.projectile_size))
 
     def take_damage(self):
-        self.health -= 1
-        self.projectile_size += 2
-        self.teleport()
+        if not self.invulnerable:
+            self.health -= 1
+            self.projectile_size += 2
+            self.teleport()
+            self.invulnerable = True
+            self.invulnerable_timer = self.invulnerable_duration
 
     def teleport(self):
         angle = random.uniform(0, 2 * math.pi)
@@ -54,36 +66,39 @@ class Merlin:
         self.y = max(UIBARHEIGHT, min(HEIGHT - self.size, new_y))
 
     def draw(self, screen):
-        pygame.draw.rect(screen, BLUE, (self.x, self.y, self.size, self.size))
+        # Flash white when invulnerable
+        color = WHITE if self.invulnerable and self.invulnerable_timer % 10 < 5 else BLUE
+        pygame.draw.rect(screen, color, (self.x, self.y, self.size, self.size))
         self.draw_health_bar(screen)
 
     def draw_health_bar(self, screen):
         health_ratio = self.health / self.max_health
-        bar_width = BOSS_HEALTH_BAR_WIDTH * health_ratio
+        bar_width = 300  # Increased from 200 to 300
+        bar_height = 20
+        border = 2
         
         # Draw border
-        pygame.draw.rect(screen, WHITE, ((WIDTH - BOSS_HEALTH_BAR_WIDTH) // 2 - BOSS_HEALTH_BAR_BORDER, 
-                                         HEIGHT - 50 - BOSS_HEALTH_BAR_BORDER, 
-                                         BOSS_HEALTH_BAR_WIDTH + 2 * BOSS_HEALTH_BAR_BORDER, 
-                                         BOSS_HEALTH_BAR_HEIGHT + 2 * BOSS_HEALTH_BAR_BORDER))
+        pygame.draw.rect(screen, WHITE, ((WIDTH - bar_width) // 2 - border, 
+                                       HEIGHT - 50 - border, 
+                                       bar_width + 2 * border, 
+                                       bar_height + 2 * border))
         
         # Draw background
-        pygame.draw.rect(screen, BLACK, ((WIDTH - BOSS_HEALTH_BAR_WIDTH) // 2, 
-                                         HEIGHT - 50, 
-                                         BOSS_HEALTH_BAR_WIDTH, 
-                                         BOSS_HEALTH_BAR_HEIGHT))
-        
-        # Draw health
-        pygame.draw.rect(screen, RED, ((WIDTH - BOSS_HEALTH_BAR_WIDTH) // 2, 
+        pygame.draw.rect(screen, BLACK, ((WIDTH - bar_width) // 2, 
                                        HEIGHT - 50, 
                                        bar_width, 
-                                       BOSS_HEALTH_BAR_HEIGHT))
+                                       bar_height))
         
-        # Draw boss name
+        # Draw health
+        pygame.draw.rect(screen, RED, ((WIDTH - bar_width) // 2, 
+                                     HEIGHT - 50, 
+                                     bar_width * health_ratio, 
+                                     bar_height))
+
+        # Draw boss name in white
         font = pygame.font.Font(None, 24)
-        name_text = font.render("Merlin, the Wise", True, WHITE)
+        name_text = font.render(f"{type(self).__name__}", True, WHITE)
         screen.blit(name_text, ((WIDTH - name_text.get_width()) // 2, HEIGHT - 80))
-        
         
 
 class Lancelot:
@@ -118,6 +133,9 @@ class Lancelot:
     def start_charge(self, trogdor):
         angle = math.atan2(trogdor.y - self.y, trogdor.x - self.x)
         self.charge_direction = (math.cos(angle), math.sin(angle))
+        charge_sound = load_sound('swoosh.wav') #mixkit-cinematic-wind-swoosh-1471 from https://mixkit.co/free-sound-effects/swoosh/
+        if charge_sound:
+            charge_sound.play()
         self.state = "charging"
 
     def take_damage(self):
@@ -134,31 +152,32 @@ class Lancelot:
 
     def draw_health_bar(self, screen):
         health_ratio = self.health / self.max_health
-        bar_width = BOSS_HEALTH_BAR_WIDTH * health_ratio
-    
+        bar_width = 300  # Increased from 200 to 300
+        bar_height = 20
+        border = 2
+        
         # Draw border
-        pygame.draw.rect(screen, WHITE, ((WIDTH - BOSS_HEALTH_BAR_WIDTH) // 2 - BOSS_HEALTH_BAR_BORDER, 
-                                        HEIGHT - 80 - BOSS_HEALTH_BAR_BORDER,  # Moved up slightly
-                                        BOSS_HEALTH_BAR_WIDTH + 2 * BOSS_HEALTH_BAR_BORDER, 
-                                        BOSS_HEALTH_BAR_HEIGHT + 2 * BOSS_HEALTH_BAR_BORDER))
-    
+        pygame.draw.rect(screen, WHITE, ((WIDTH - bar_width) // 2 - border, 
+                                       HEIGHT - 50 - border, 
+                                       bar_width + 2 * border, 
+                                       bar_height + 2 * border))
+        
         # Draw background
-        pygame.draw.rect(screen, BLACK, ((WIDTH - BOSS_HEALTH_BAR_WIDTH) // 2, 
-                                        HEIGHT - 80, 
-                                        BOSS_HEALTH_BAR_WIDTH, 
-                                        BOSS_HEALTH_BAR_HEIGHT))
-    
+        pygame.draw.rect(screen, BLACK, ((WIDTH - bar_width) // 2, 
+                                       HEIGHT - 50, 
+                                       bar_width, 
+                                       bar_height))
+        
         # Draw health
-        pygame.draw.rect(screen, RED, ((WIDTH - BOSS_HEALTH_BAR_WIDTH) // 2, 
-                                        HEIGHT - 80, 
-                                        bar_width, 
-                                        BOSS_HEALTH_BAR_HEIGHT))
-    
-        # Draw boss name
-        font = pygame.font.Font(None, 36)  # Increased font size
-        name_text = font.render(f"Boss: {type(self).__name__}", True, WHITE)
-        screen.blit(name_text, ((WIDTH - name_text.get_width()) // 2, HEIGHT - 120))
+        pygame.draw.rect(screen, RED, ((WIDTH - bar_width) // 2, 
+                                     HEIGHT - 50, 
+                                     bar_width * health_ratio, 
+                                     bar_height))
 
+        # Draw boss name in white
+        font = pygame.font.Font(None, 24)
+        name_text = font.render(f"{type(self).__name__}", True, WHITE)
+        screen.blit(name_text, ((WIDTH - name_text.get_width()) // 2, HEIGHT - 80))
 
 class DragonKing:
     def __init__(self):

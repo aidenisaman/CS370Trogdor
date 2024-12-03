@@ -75,12 +75,12 @@ def initialize_game(level):
         guardians = []
         for _ in range(level + 1):
             guardians.append(Guardian(random.choice(houses)))
-        lancers = [Lancer() for _ in range(min(level - 9, 4))]
+        lancers = [Lancer() for _ in range(min(level - 5, 4))]
         boss = None
         projectiles = []
         teleporters = []
 
-    elif level < 15: # Section 3 adds teleporter TODO basic wizard
+    elif level < 13: # Section 3 adds teleporter TODO basic wizard
         houses = [House() for _ in range(level + 2)]
         peasants = []
         knights = [Knight() for _ in range(min(level, 5))]
@@ -97,7 +97,7 @@ def initialize_game(level):
     return trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters
 
 def Is_Invulerable(current_time, spawn_time):
-    if (spawn_time + 300 < current_time): # If your spawn time + two seconds is less than current time invulerable
+    if (spawn_time + 200 < current_time): # If your spawn time + two seconds is less than current time invulerable
         return True
     return False
 
@@ -105,7 +105,7 @@ def Is_Invulerable(current_time, spawn_time):
 def game_loop(screen):
     # Initialize game state
     game_state = {
-        'level': 1,
+        'level': 5,
         'houses_crushed': 0,
         'lives': 300,
         'burnination_threshold': INITIAL_BURNINATION_THRESHOLD,
@@ -176,7 +176,6 @@ def game_loop(screen):
         for lancer in lancers:
             lancer.move(trogdor)
 
-        # Random peasant spawning
         if boss is not None:
             if isinstance(boss, Lancelot):
                 boss.update(trogdor)
@@ -305,6 +304,128 @@ def game_loop(screen):
                                 trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters = initialize_game(game_state['level'])
                                 peasants.clear()
                                 game_state = select_power_up(screen, trogdor, game_state, game_stats['timeH'], game_stats['timeM'], game_stats['timeS'])
+            # Randomly spawn new peasants
+            if random.random() < PEASANT_SPAWN_PROBABILITY and houses:
+                peasants.append(Peasant(random.choice(houses)))
+            
+            # Check for collisions between Trogdor and peasants
+            for peasant in peasants[:]:
+                if (abs(trogdor.x - peasant.x) < trogdor.size and
+                    abs(trogdor.y - peasant.y) < trogdor.size):
+                    splat_noise.play()
+                    peasants.remove(peasant)
+                    trogdor.peasants_stomped += 1
+                    if trogdor.peasants_stomped >= game_state['burnination_threshold'] and not trogdor.burnination_mode:
+                        trogdor.burnination_mode = True
+                        trogdor.burnination_timer = game_state['burnination_duration']
+                        trogdor.peasants_stomped = 0
+            
+            # Check for collisions between Trogdor and knights
+            if Is_Invulerable(game_stats['timeF'], spawn_time):
+                for knight in knights:
+                    if (abs(trogdor.x - knight.x) < trogdor.size and
+                        abs(trogdor.y - knight.y) < trogdor.size):
+                        slash_noise.play()
+                        game_state['lives'] -= 1
+                        trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                        trogdor.peasants_stomped = 0
+                        spawn_time = game_stats['timeF']
+                        trogdor.burnination_mode = False
+                        if game_state['lives'] <= 0:
+                            if game_over(screen) == "exit": # If they select exit, exit game
+                                return False, game_stats
+                            else: # Else restart game from level 1
+                                game_state['level'] = 1
+                                game_state['lives'] = 3
+                                game_state['houses_crushed'] = 0
+                                #reset time variables
+                                game_stats['timeF'] = 0
+                                game_stats['timeS'] = 0
+                                game_stats['timeM'] = 0
+                                game_stats['timeH'] = 0
+                                spawn_time = 0
+                                jump_time = 0
+                                trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters = initialize_game(game_state['level'])
+                        
+                    # Check for collisions with Trogdor
+            if Is_Invulerable(game_stats['timeF'], spawn_time):         
+                for lancer in lancers:
+                    if (abs(trogdor.x - lancer.x) < trogdor.size and
+                        abs(trogdor.y - lancer.y) < trogdor.size):
+                        slash_noise.play()
+                        game_state['lives'] -= 1
+                        trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                        spawn_time = game_stats['timeF']
+                        trogdor.burnination_mode = False
+                        if game_state['lives'] <= 0:
+                            if game_over(screen) == "exit": # If they select exit, exit game
+                                running = False
+                        else: # Else restart game from level 1
+                            game_state['level'] = 1
+                            game_state['lives'] = 3
+                            game_state['houses_crushed'] = 0
+                            #reset time variables
+                            game_stats['timeF'] = 0
+                            game_stats['timeS'] = 0
+                            game_stats['timeM'] = 0
+                            game_stats['timeH'] = 0
+                            spawn_time = 0
+                            trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters = initialize_game(game_state['level'])        
+        
+            # Check for collisions between Trogdor and knights
+            if Is_Invulerable(game_stats['timeF'], spawn_time):
+                for guardian in guardians:
+                    if (abs(trogdor.x - guardian.x) < trogdor.size and
+                        abs(trogdor.y - guardian.y) < trogdor.size):
+                        slash_noise.play()
+                        game_state['lives'] -= 1
+                        trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                        trogdor.peasants_stomped = 0
+                        spawn_time = game_stats['timeF']
+                        trogdor.burnination_mode = False
+                        if game_state['lives'] <= 0:
+                            if game_over(screen) == "exit": # If they select exit, exit game
+                                running = False
+                            else: # Else restart game from level 1
+                                game_state['level'] = 1
+                                game_state['lives'] = 3
+                                game_state['houses_crushed'] = 0
+                                #reset time variables
+                                game_stats['timeF'] = 0
+                                game_stats['timeS'] = 0
+                                game_stats['timeM'] = 0
+                                game_stats['timeH'] = 0
+                                spawn_time = 0
+                                jump_time = 0
+                                trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters = initialize_game(game_state['level'])
+
+            # Check for collisions between Trogdor and teleporters
+            if Is_Invulerable(game_stats['timeF'], spawn_time):
+                for teleporter in teleporters:
+                    if (abs(trogdor.x - teleporter.x) < trogdor.size and
+                        abs(trogdor.y - teleporter.y) < trogdor.size):
+                        slash_noise.play()
+                        game_state['lives'] -= 1
+                        trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                        trogdor.peasants_stomped = 0
+                        spawn_time = game_stats['timeF']
+                        trogdor.burnination_mode = False
+                        if game_state['lives'] <= 0:
+                            if game_over(screen) == "exit": # If they select exit, exit game
+                                running = False
+                            else: # Else restart game from level 1
+                                game_state['level'] = 1
+                                game_state['lives'] = 3
+                                game_state['houses_crushed'] = 0
+                                #reset time variables
+                                game_stats['timeF'] = 0
+                                game_stats['timeS'] = 0
+                                game_stats['timeM'] = 0
+                                game_stats['timeH'] = 0
+                                spawn_time = 0
+                                jump_time = 0
+                                trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters = initialize_game(game_state['level'])
+
 
         # Drawing
         screen.fill(BLACK)

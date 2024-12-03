@@ -55,6 +55,7 @@ def initialize_game(level):
             boss = DragonKing()
             
         projectiles = []
+
     elif level < 5: # Section 1 knights and guardians
         # Regular level initialization
         houses = [House() for _ in range(level + 2)]
@@ -92,8 +93,6 @@ def initialize_game(level):
         projectiles = []
         teleporters = [Teleporter() for _ in range(min(level, 1))]
 
-
-
     return trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters
 
 def Is_Invulerable(current_time, spawn_time):
@@ -105,7 +104,7 @@ def Is_Invulerable(current_time, spawn_time):
 def game_loop(screen):
     # Initialize game state
     game_state = {
-        'level': 5,
+        'level': 1,
         'houses_crushed': 0,
         'lives': 300,
         'burnination_threshold': INITIAL_BURNINATION_THRESHOLD,

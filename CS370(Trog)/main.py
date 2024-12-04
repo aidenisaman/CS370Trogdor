@@ -157,6 +157,8 @@ def game_loop(screen):
         elif keys[pygame.K_w] | keys[pygame.K_s] | keys[pygame.K_a] | keys[pygame.K_d]:
             trogdor.move(keys[pygame.K_d] - keys[pygame.K_a],
                         keys[pygame.K_s] - keys[pygame.K_w])
+        
+        trogdor.update()
 
         # Update regular enemies and objects
         for peasant in peasants:

@@ -1,3 +1,39 @@
+"""
+Build an installer for the Trogdor 2 game using PyInstaller.
+
+Required pip installations before running:
+    pip install PyInstaller
+    pip install pygame
+
+Additional package requirements:
+    - Windows: None
+    - macOS: None
+    - Linux: python3-dev (apt-get install python3-dev)
+
+Usage:
+    1. Install requirements:
+       pip install -r requirements.txt
+       # Or install individually:
+       pip install PyInstaller
+       pip install pygame
+    
+    2. Run the installer script:
+       python installer.py
+
+The script will:
+    - Create a single executable file
+    - Bundle all required assets
+    - Configure platform-specific options
+    - Output the executable in the dist/ directory
+
+Output:
+    - Windows: dist/Trogdor2.exe
+    - macOS: dist/Trogdor2.app
+    - Linux: dist/Trogdor2
+
+Note: Ensure all game assets are in an 'assets' directory at the same level
+as the installer script.
+"""
 import sys
 import os
 from pathlib import Path

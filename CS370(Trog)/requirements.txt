@@ -1,0 +1,15 @@
+# Core game engine and graphics
+pygame>=2.5.0
+
+# For building the executable
+PyInstaller>=6.3.0
+
+# For building on different platforms
+setuptools>=69.0.0
+wheel>=0.42.0
+
+# JSON handling (used in leaderboard.py)
+json5>=0.9.14
+
+# Path handling (used in installer.py)
+pathlib>=1.0.1

@@ -306,7 +306,7 @@ class Trap:
     def draw(self, screen):
         # Draw trap on screen
         #pygame.draw.rect(screen, RED, (self.x, self.y, self.size, self.size))
-        # Draw trap as an X
+        # Draw trap as an X on screen
         half_size = self.size // 2
         # Line 1: top-left to bottom-right
         pygame.draw.line(screen, RED, (self.x - half_size, self.y - half_size), (self.x + half_size, self.y + half_size), 4)

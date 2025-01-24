@@ -436,6 +436,34 @@ def game_loop(screen):
                                 jump_time = 0
                                 trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters, trappers = initialize_game(game_state['level'])
 
+            # Check for collisions between Trogdor and traps/trappers
+            if Is_Invulerable(game_stats['timeF'], spawn_time):
+                for trapper in trappers:
+                    for trap in trapper.traps:
+                        if (abs(trogdor.x - trap.x) < trogdor.size and
+                            abs(trogdor.y - trap.y) < trogdor.size):
+                            slash_noise.play()
+                            game_state['lives'] -= 1
+                            trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                            trogdor.peasants_stomped = 0
+                            spawn_time = game_stats['timeF']
+                            trogdor.burnination_mode = False
+                            if game_state['lives'] <= 0:
+                                if game_over(screen) == "exit": # If they select exit, exit game
+                                    running = False
+                                else: # Else restart game from level 1
+                                    game_state['level'] = 1
+                                    game_state['lives'] = 3
+                                    game_state['houses_crushed'] = 0
+                                    #reset time variables
+                                    game_stats['timeF'] = 0
+                                    game_stats['timeS'] = 0
+                                    game_stats['timeM'] = 0
+                                    game_stats['timeH'] = 0
+                                    spawn_time = 0
+                                    jump_time = 0
+                                    trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters, trappers = initialize_game(game_state['level'])
+
 
         # Drawing
         screen.fill(BLACK)

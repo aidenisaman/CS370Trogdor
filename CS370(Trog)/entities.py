@@ -258,3 +258,25 @@ class Lancer:
         pygame.draw.rect(screen, DARKORANGE, (self.x, self.y, self.size, self.size))
         pygame.draw.rect(screen, BLACK, (self.x, self.y + 5, self.size, self.size/2))
           
+class Trapper:
+    def __init__(self):
+        # Initialize Trapper's position, size, speed, and movement direction
+        self.x = random.randint(0, WIDTH)
+        self.y = random.randint(UIBARHEIGHT, HEIGHT)
+        self.size = KNIGHT_SIZE
+        self.speed = KNIGHT_SPEED
+        self.direction = random.uniform(0, 2 * math.pi)
+        self.move_timer = 0
+
+    def move(self):
+        # Move Trapper
+        self.direction = random.uniform(0, 2 * math.pi)
+        
+        dx = math.cos(self.direction) * self.speed
+        dy = math.sin(self.direction) * self.speed
+        self.x = max(0, min(WIDTH - self.size, self.x + dx))
+        self.y = max(UIBARHEIGHT, min(HEIGHT - self.size, self.y + dy))
+
+    def draw(self, screen):
+        # Draw Trapper on the screen
+        pygame.draw.rect(screen, DARKORANGE, (self.x, self.y, self.size, self.size))

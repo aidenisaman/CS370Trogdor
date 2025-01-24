@@ -285,7 +285,7 @@ class Trapper:
     def place_trap(self):
         # Place a trap every 180 frames (3 seconds at 60 FPS)
         self.trap_timer += 1
-        if self.trap_timer >= 180:
+        if self.trap_timer >= 180 and len(self.traps) < 6:
             new_trap = Trap(self)  # Create a new Trap instance at the Trapper's location
             self.traps.append(new_trap)
             self.trap_timer = 0

@@ -267,16 +267,48 @@ class Trapper:
         self.speed = KNIGHT_SPEED
         self.direction = random.uniform(0, 2 * math.pi)
         self.move_timer = 0
+        self.trap_timer = 0  # Timer for placing traps
+        self.traps = []  # List to store traps
 
     def move(self):
-        # Move Trapper
-        self.direction = random.uniform(0, 2 * math.pi)
+        # Move Trapper in a random direction, changing direction periodically
+        self.move_timer += 1
+        if self.move_timer > 120:
+            self.direction = random.uniform(0, 2 * math.pi)
+            self.move_timer = 0
         
         dx = math.cos(self.direction) * self.speed
         dy = math.sin(self.direction) * self.speed
         self.x = max(0, min(WIDTH - self.size, self.x + dx))
         self.y = max(UIBARHEIGHT, min(HEIGHT - self.size, self.y + dy))
 
+    def place_trap(self):
+        # Place a trap every 180 frames (3 seconds at 60 FPS)
+        self.trap_timer += 1
+        if self.trap_timer >= 180:
+            new_trap = Trap(self)  # Create a new Trap instance at the Trapper's location
+            self.traps.append(new_trap)
+            self.trap_timer = 0
+
     def draw(self, screen):
         # Draw Trapper on the screen
         pygame.draw.rect(screen, DARKORANGE, (self.x, self.y, self.size, self.size))
+        # Draw all traps
+        for trap in self.traps:
+            trap.draw(screen)
+
+class Trap:
+    def __init__(self, trapper):
+        self.x = trapper.x
+        self.y = trapper.y
+        self.size = PEASANT_SIZE
+
+    def draw(self, screen):
+        # Draw trap on screen
+        #pygame.draw.rect(screen, RED, (self.x, self.y, self.size, self.size))
+        # Draw trap as an X
+        half_size = self.size // 2
+        # Line 1: top-left to bottom-right
+        pygame.draw.line(screen, RED, (self.x - half_size, self.y - half_size), (self.x + half_size, self.y + half_size), 4)
+        # Line 2: top-right to bottom-left
+        pygame.draw.line(screen, RED, (self.x + half_size, self.y - half_size), (self.x - half_size, self.y + half_size), 4)

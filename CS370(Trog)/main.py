@@ -184,6 +184,7 @@ def game_loop(screen):
             lancer.move(trogdor)
         for trapper in trappers:
             trapper.move()
+            trapper.place_trap()
 
         if boss is not None:
             if isinstance(boss, Lancelot):
@@ -456,6 +457,8 @@ def game_loop(screen):
             projectile.draw(screen)
         for teleporter in teleporters:
             teleporter.draw(screen)
+        for trapper in trappers:
+            trapper.draw(screen)
         if boss:
             boss.draw(screen)
         trogdor.draw(screen)

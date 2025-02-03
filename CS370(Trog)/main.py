@@ -430,7 +430,17 @@ def game_loop(screen):
 
         # Drawing
         screen.fill(BLACK)
-        draw_background(screen, 'level')
+        level = ''
+        bg = random.randint(1,3)
+        if bg == 1:
+            level = 'level'
+        elif bg ==2:
+            level = 'bg1'
+        elif bg ==3:
+            level ='bg2'
+        else:
+            level = 'level'
+        draw_background(screen, level)
         pygame.draw.rect(screen, BLACK, (0, 0, WIDTH, UIBARHEIGHT), 0)
         
         # Draw all game objects

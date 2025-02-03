@@ -96,7 +96,7 @@ BACKGROUND_IMAGES = None
 
 def load_background_images():
     backgrounds = {}
-    for bg_type, filename in [('menu', 'menu.webp'), ('level', 'levelGray.webp'), ('powerupMenu', 'level.webp'),('credits','credits.webp'),('tutorial','tutorial.webp')]:
+    for bg_type, filename in [('menu', 'menu.webp'), ('level', 'levelGray.webp'), ('powerupMenu', 'level.webp'),('credits','credits.webp'),('tutorial','tutorial.webp'),('bg1','background1.webp'),('bg2','background2.webp')]:
         image = load_image(filename)
         if image:
             backgrounds[bg_type] = image

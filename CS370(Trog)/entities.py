@@ -357,7 +357,7 @@ class ApprenticeMage:
             angle,
             self.projectile_size
         )
-        new_projectile.speed = MERLIN_PROJECTILE_SPEED * 0.75  # Slower than Merlin's projectiles
+        new_projectile.speed = MERLIN_PROJECTILE_SPEED * 0.65  # Slower than Merlin's projectiles
         projectiles.append(new_projectile)
 
     def draw(self, screen):

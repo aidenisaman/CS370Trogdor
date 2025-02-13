@@ -5,10 +5,15 @@ Functions:
 - game_loop(screen: pygame.Surface) -> bool: Main game loop handling events, updates, and drawing.
 - main() -> None: Entry point, manages game flow between menus and gameplay.
  """
+
+#todo work on spawn pools
+#add level randomization
+#add level difficulty progression
+
 import random
 import pygame
 
-from entities import Trogdor, Peasant, Knight, Guardian, House, Lancer, Teleporter, Trapper
+from entities import Trogdor, Peasant, Knight, Guardian, House, Lancer, Teleporter, Trapper, ApprenticeMage
 from bosses import Lancelot, Merlin, DragonKing
 from powerups import select_power_up
 from utils import (BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, ORANGE, PEASANT_SPAWN_PROBABILITY,
@@ -17,6 +22,7 @@ from utils import (BURNINATION_DURATION, GREEN, INITIAL_BURNINATION_THRESHOLD, O
 from ui import (start_screen, show_congratulations_screen, pause_game, game_over, load_sound,
                 play_music, draw_background, initialize_background_images, draw_burnination_bar,show_credit_screen,show_tutorial_screen) 
 from leaderboard import Leaderboard, show_leaderboard_screen, get_player_name
+from projectile_handler import update_projectiles
 
 # Initialize Pygame
 pygame.init()
@@ -46,6 +52,7 @@ def initialize_game(level):
         lancers = []
         teleporters = []
         trappers = []
+        apprentice_mages = []
 
         boss = None
         if level == 5:
@@ -70,9 +77,10 @@ def initialize_game(level):
         projectiles = []
         teleporters = []
         trappers = [Trapper() for _ in range(min(level, 5))]
+        apprentice_mages = []
 
 
-    elif level < 10: # Section 2 adds lancer TODO Trapper
+    elif level < 10: # Section 2 adds lancer and trappers
         houses = [House() for _ in range(level + 2)]
         peasants = []
         knights = [Knight() for _ in range(min(level, 5))]
@@ -84,12 +92,14 @@ def initialize_game(level):
         projectiles = []
         teleporters = []
         trappers = []
+        apprentice_mages = []
 
 
-    elif level < 13: # Section 3 adds teleporter TODO basic wizard
+    elif level < 13: # Section 3 adds teleporter and apprentice mage
         houses = [House() for _ in range(level + 2)]
         peasants = []
         knights = [Knight() for _ in range(min(level, 5))]
+        apprentice_mages = [ApprenticeMage() for _ in range(2)] # 2 mages
         guardians = []
         for _ in range(level + 1):
             guardians.append(Guardian(random.choice(houses)))
@@ -99,7 +109,7 @@ def initialize_game(level):
         teleporters = [Teleporter() for _ in range(min(level, 1))]
         trappers = []
 
-    return trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters, trappers
+    return trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters, trappers, apprentice_mages
 
 def Is_Invulerable(current_time, spawn_time):
     if (spawn_time + 200 < current_time): # If your spawn time + two seconds is less than current time invulerable
@@ -125,7 +135,7 @@ def game_loop(screen):
     }
     
     # Initialize game objects
-    trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters,trappers = initialize_game(game_state['level'])
+    trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters, trappers, apprentice_mages = initialize_game(game_state['level'])
     
     # Initialize level count to track the level
     level_cnt = 0
@@ -171,6 +181,16 @@ def game_loop(screen):
             peasant.move()
         for knight in knights:
             knight.move(trogdor)
+        for apprentice_mage in apprentice_mages:
+            apprentice_mage.update(trogdor, projectiles)
+        
+        continue_game, spawn_time = update_projectiles(
+            projectiles, trogdor, game_state, game_stats, 
+            spawn_time, jump_time, slash_noise, screen
+        )
+        if not continue_game:
+            return False, game_stats
+
         for guardian in guardians:
             guardian.move(guardian_angle)
         guardian_angle += 0.0175
@@ -187,7 +207,7 @@ def game_loop(screen):
             trapper.place_trap()
 
         # All of collision checked entities in a list to simpilfy main
-        collision_entities = knights + lancers + teleporters + guardians
+        collision_entities = knights + lancers + teleporters + guardians + apprentice_mages
         for trapper in trappers:
             collision_entities.extend(trapper.traps)
         
@@ -201,7 +221,7 @@ def game_loop(screen):
                     if boss.health <= 0:
                         boss = None
                         game_state['level'] += 1
-                        trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters, trappers = initialize_game(game_state['level'])
+                        trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters, trappers, apprentice_mages = initialize_game(game_state['level'])
                         game_state = select_power_up(screen, trogdor, game_state, int(game_stats['timeH']), game_stats['timeM'], game_stats['timeS'])
                 elif boss.state == "charging" and Is_Invulerable(game_stats['timeM'], spawn_time):
                     if (abs(trogdor.x - boss.x) < trogdor.size + boss.size and
@@ -221,39 +241,10 @@ def game_loop(screen):
                                 game_stats['timeH'] = 0
                                 spawn_time = 0
                                 jump_time = 0
-                                trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters, trappers = initialize_game(game_state['level'])
+                                trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters, trappers, apprentice_mages = initialize_game(game_state['level'])
 
             if isinstance(boss, Merlin):
                     boss.update(trogdor, projectiles)
-                    # Update and check all projectiles
-                    for projectile in projectiles[:]:  # Use slice to avoid modifying list during iteration
-                        projectile.move()
-                        # Remove projectiles that are off screen
-                        if (projectile.x < 0 or projectile.x > WIDTH or projectile.y < 0 or projectile.y > HEIGHT):
-                            projectiles.remove(projectile)
-                        # Check for collision with Trogdor
-                        elif Is_Invulerable(game_stats['timeM'], spawn_time):
-                            if (abs(trogdor.x + trogdor.size/2 - projectile.x) < trogdor.size/2 + projectile.size and
-                                abs(trogdor.y + trogdor.size/2 - projectile.y) < trogdor.size/2 + projectile.size):
-                                slash_noise.play()
-                                game_state['lives'] -= 1
-                                trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
-                                spawn_time = game_stats['timeM']
-                                projectiles.remove(projectile)
-                                if game_state['lives'] <= 0:
-                                    if game_over(screen) == "exit":
-                                        return False, game_stats
-                                    else:
-                                        game_state['level'] = 1
-                                        game_state['lives'] = INITIAL_LIVES
-                                        game_stats['timeF'] = 0
-                                        game_stats['timeS'] = 0
-                                        game_stats['timeM'] = 0
-                                        game_stats['timeH'] = 0
-                                        spawn_time = 0
-                                        jump_time = 0
-                                        trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters, trappers = initialize_game(game_state['level'])
-
                     # Check for Trogdor hitting Merlin
                     if (abs(trogdor.x - boss.x) < trogdor.size + boss.size and
                         abs(trogdor.y - boss.y) < trogdor.size + boss.size):
@@ -261,7 +252,7 @@ def game_loop(screen):
                         if boss.health <= 0:
                             boss = None
                             game_state['level'] += 1
-                            trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters, trappers = initialize_game(game_state['level'])
+                            trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters, trappers, apprentice_mages = initialize_game(game_state['level'])
                             game_state = select_power_up(screen, trogdor, game_state, int(game_stats['timeH']), game_stats['timeM'], game_stats['timeS'])
 
             elif isinstance(boss, DragonKing):
@@ -296,7 +287,7 @@ def game_loop(screen):
                                         game_stats['timeH'] = 0
                                         spawn_time = 0
                                         jump_time = 0
-                                        trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters, trappers = initialize_game(game_state['level'])
+                                        trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters, trappers, apprentice_mages = initialize_game(game_state['level'])
 
                     if (abs(trogdor.x - boss.x) < trogdor.size + boss.size and
                         abs(trogdor.y - boss.y) < trogdor.size + boss.size):
@@ -316,7 +307,7 @@ def game_loop(screen):
                                 game_state['level'] += 1
                                 game_state['burnination_threshold'] += 2
                                 game_state['houses_crushed'] = 0
-                                trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters, trappers = initialize_game(game_state['level'])
+                                trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters, trappers, apprentice_mages = initialize_game(game_state['level'])
                                 peasants.clear()
                                 game_state = select_power_up(screen, trogdor, game_state, game_stats['timeH'], game_stats['timeM'], game_stats['timeS'])
             # Randomly spawn new peasants
@@ -360,7 +351,7 @@ def game_loop(screen):
                                 game_stats['timeH'] = 0
                                 spawn_time = 0
                                 jump_time = 0
-                                trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters, trappers = initialize_game(game_state['level'])
+                                trogdor, houses, peasants, knights, guardians, lancers, boss, projectiles, teleporters, trappers, apprentice_mages = initialize_game(game_state['level'])
 
         # Drawing
         screen.fill(BLACK)
@@ -384,6 +375,8 @@ def game_loop(screen):
             teleporter.draw(screen)
         for trapper in trappers:
             trapper.draw(screen)
+        for apprentice_mage in apprentice_mages:
+            apprentice_mage.draw(screen)
         if boss:
             boss.draw(screen)
         trogdor.draw(screen)

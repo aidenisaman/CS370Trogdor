@@ -312,3 +312,58 @@ class Trap:
         pygame.draw.line(screen, RED, (self.x - half_size, self.y - half_size), (self.x + half_size, self.y + half_size), 4)
         # Line 2: top-right to bottom-left
         pygame.draw.line(screen, RED, (self.x + half_size, self.y - half_size), (self.x - half_size, self.y + half_size), 4)
+
+class ApprenticeMage:
+    def __init__(self):
+        self.x = random.randint(0, WIDTH - KNIGHT_SIZE)
+        self.y = random.randint(UIBARHEIGHT, HEIGHT - KNIGHT_SIZE)
+        self.size = KNIGHT_SIZE
+        self.speed = KNIGHT_SPEED * 0.75  # Slower than knights
+        self.direction = random.uniform(0, 2 * math.pi)
+        self.move_timer = 0
+        self.projectile_cooldown = 120  # 2 seconds at 60 FPS
+        self.projectile_timer = self.projectile_cooldown
+        self.projectile_size = 10  # Smaller than Merlin's projectiles
+
+    def move(self, trogdor):
+        # Change direction periodically
+        self.move_timer += 1
+        if self.move_timer > KNIGHT_DIRECTION_CHANGE_INTERVAL:
+            self.direction = random.uniform(0, 2 * math.pi)
+            self.move_timer = 0
+        
+        # Move in current direction
+        dx = math.cos(self.direction) * self.speed
+        dy = math.sin(self.direction) * self.speed
+        self.x = max(0, min(WIDTH - self.size, self.x + dx))
+        self.y = max(UIBARHEIGHT, min(HEIGHT - self.size, self.y + dy))
+
+    def update(self, trogdor, projectiles):
+        self.move(trogdor)
+        self.projectile_timer -= 1
+        
+        # Fire projectile when cooldown reaches 0
+        if self.projectile_timer <= 0:
+            self.fire_projectile(trogdor, projectiles)
+            self.projectile_timer = self.projectile_cooldown
+
+    def fire_projectile(self, trogdor, projectiles):
+        # Calculate angle to target
+        angle = math.atan2(trogdor.y - self.y, trogdor.x - self.x)
+        # Create new projectile
+        new_projectile = Projectile(
+            self.x + self.size // 2,
+            self.y + self.size // 2,
+            angle,
+            self.projectile_size
+        )
+        new_projectile.speed = MERLIN_PROJECTILE_SPEED * 0.65  # Slower than Merlin's projectiles
+        projectiles.append(new_projectile)
+
+    def draw(self, screen):
+        # Draw the apprentice mage as a purple square
+        pygame.draw.rect(screen, PURPLE, (self.x, self.y, self.size, self.size))
+        # Add a white circle in the middle to distinguish from other enemies
+        center_x = self.x + self.size // 2
+        center_y = self.y + self.size // 2
+        pygame.draw.circle(screen, WHITE, (int(center_x), int(center_y)), self.size // 4)

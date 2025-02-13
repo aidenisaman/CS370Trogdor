@@ -321,7 +321,7 @@ class ApprenticeMage:
         self.speed = KNIGHT_SPEED * 0.75  # Slower than knights
         self.direction = random.uniform(0, 2 * math.pi)
         self.move_timer = 0
-        self.projectile_cooldown = 180  # 3 seconds at 60 FPS
+        self.projectile_cooldown = 120  # 2 seconds at 60 FPS
         self.projectile_timer = self.projectile_cooldown
         self.projectile_size = 10  # Smaller than Merlin's projectiles
 
@@ -351,12 +351,14 @@ class ApprenticeMage:
         # Calculate angle to target
         angle = math.atan2(trogdor.y - self.y, trogdor.x - self.x)
         # Create new projectile
-        projectiles.append(Projectile(
+        new_projectile = Projectile(
             self.x + self.size // 2,
             self.y + self.size // 2,
             angle,
             self.projectile_size
-        ))
+        )
+        new_projectile.speed = MERLIN_PROJECTILE_SPEED * 0.75  # Slower than Merlin's projectiles
+        projectiles.append(new_projectile)
 
     def draw(self, screen):
         # Draw the apprentice mage as a purple square

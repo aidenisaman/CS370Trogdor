@@ -128,13 +128,35 @@ class House:
         self.y = random.randint(UIBARHEIGHT, HEIGHT - HOUSE_SIZE)
         self.size = HOUSE_SIZE
         self.health = HOUSE_HEALTH
+        self.max_health = HOUSE_HEALTH
+        self.is_destroyed = False  # New flag for destroyed houses
 
     def draw(self, screen):
         # Draw House on the screen with a health bar
-        pygame.draw.rect(screen, YELLOW, (self.x, self.y, self.size, self.size))
-        health_bar_height = 5
-        health_bar_width = self.size * (self.health / HOUSE_HEALTH)
-        pygame.draw.rect(screen, GREEN, (self.x, self.y - health_bar_height - 2, health_bar_width, health_bar_height))
+        # Change color based on health percentage
+        health_percent = self.health / self.max_health
+        
+        if self.is_destroyed:
+            # Destroyed house (burnt black)
+            house_color = BLACK
+        elif health_percent < 0.3:
+            # Severely damaged house (reddish)
+            house_color = (150, 50, 0)  # Dark red/brown
+        elif health_percent < 0.7:
+            # Moderately damaged house (brownish)
+            house_color = (200, 150, 0)  # Darker yellow/brown
+        else:
+            # Healthy house (yellow)
+            house_color = YELLOW
+            
+        pygame.draw.rect(screen, house_color, (self.x, self.y, self.size, self.size))
+        
+        # Only show health bar if house isn't destroyed
+        if not self.is_destroyed:
+            health_bar_height = 5
+            health_bar_width = self.size * health_percent
+            pygame.draw.rect(screen, GREEN, (self.x, self.y - health_bar_height - 2, 
+                                          health_bar_width, health_bar_height))
 
 class Guardian:
     def __init__(self, house):

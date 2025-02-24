@@ -55,7 +55,7 @@ BUILDER_SIZE = 20
 BUILDER_SPEED = 0.75
 BUILDER_REPAIR_AMOUNT = 0.3 # 30% health repair
 BUILDER_REPAIR_RANGE = 30  # Distance to repair house
-BUILDER_COOLDOWN = 300  # 5 seconds at 60FPS will be adjusted as needed for game balance
+BUILDER_COOLDOWN = 360  # 5 seconds at 60FPS will be adjusted as needed for game balance
 BUILDER_SPAWN_LEVEL = 7  # Builders start spawning at level 7
 BUILDER_MAX_COUNT = 2
 

@@ -402,6 +402,9 @@ class Builder:
         self.state = "roaming"  # States: "roaming", "repairing", "cooldown"
         self.cooldown_timer = 0
         self.target_house = None
+        self.repair_rate = 1  # Health points repaired per frame
+        self.repair_timer = 0
+        self.repair_interval = 10  # Repair every 10 frames (6 times per second at 60 FPS)
 
     def move(self, houses):
         # Update state based on houses
@@ -413,7 +416,7 @@ class Builder:
                 
         if self.state == "roaming":
             # Check for damaged houses
-            damaged_houses = [house for house in houses if house.health < HOUSE_HEALTH]
+            damaged_houses = [house for house in houses if house.health < HOUSE_HEALTH and not house.is_destroyed]
             if damaged_houses:
                 # Find nearest damaged house
                 nearest_house = min(damaged_houses, 
@@ -433,11 +436,18 @@ class Builder:
                 self.y = max(UIBARHEIGHT, min(HEIGHT - self.size, self.y + dy))
                 
         elif self.state == "repairing":
-            if not self.target_house or self.target_house.health >= HOUSE_HEALTH:
-                # House is fully repaired or gone
+            if not self.target_house or self.target_house.is_destroyed:
+                # House is gone or destroyed
                 self.state = "cooldown"
                 self.cooldown_timer = BUILDER_COOLDOWN
                 self.target_house = None
+                self.repair_timer = 0
+            elif self.target_house.health >= HOUSE_HEALTH:
+                # House is fully repaired
+                self.state = "cooldown"
+                self.cooldown_timer = BUILDER_COOLDOWN
+                self.target_house = None
+                self.repair_timer = 0
             else:
                 # Move towards target house
                 dx = self.target_house.x - self.x
@@ -445,10 +455,11 @@ class Builder:
                 distance = math.sqrt(dx**2 + dy**2)
                 
                 if distance <= BUILDER_REPAIR_RANGE:
-                    # We're close enough to repair
-                    self.repair_house()
-                    self.state = "cooldown"
-                    self.cooldown_timer = BUILDER_COOLDOWN
+                    # We're close enough to repair - do a small repair each tick
+                    self.repair_timer += 1
+                    if self.repair_timer >= self.repair_interval:
+                        self.repair_house()
+                        self.repair_timer = 0
                 else:
                     # Move towards house
                     speed = min(self.speed, distance)
@@ -456,10 +467,9 @@ class Builder:
                     self.y += (dy / distance) * speed
 
     def repair_house(self):
-        if self.target_house:
-            # Repair by percentage of max health
-            repair_amount = HOUSE_HEALTH * BUILDER_REPAIR_AMOUNT
-            self.target_house.health = min(HOUSE_HEALTH, self.target_house.health + repair_amount)
+        if self.target_house and not self.target_house.is_destroyed:
+            # Repair by a small amount each time
+            self.target_house.health = min(HOUSE_HEALTH, self.target_house.health + self.repair_rate)
 
     def draw(self, screen):
         # Draw Builder on the screen
@@ -468,14 +478,29 @@ class Builder:
         # Add a tool icon to make builder visually distinct
         if self.state == "repairing":
             # Draw wrench or hammer when repairing
+            # Animate the repair action based on repair_timer
+            offset = min(3, int(self.repair_timer / 2))
             pygame.draw.line(screen, BLACK, 
-                           (self.x + 5, self.y + 5), 
-                           (self.x + self.size - 5, self.y + self.size - 5), 
+                           (self.x + 5 + offset, self.y + 5), 
+                           (self.x + self.size - 5 - offset, self.y + self.size - 5), 
                            2)
             pygame.draw.line(screen, BLACK, 
-                           (self.x + self.size - 5, self.y + 5), 
-                           (self.x + 5, self.y + self.size - 5), 
+                           (self.x + self.size - 5 - offset, self.y + 5), 
+                           (self.x + 5 + offset, self.y + self.size - 5), 
                            2)
+            
+            # Show repair progress
+            if self.target_house:
+                # Draw a small progress indicator above the builder
+                repair_progress = self.target_house.health / HOUSE_HEALTH
+                progress_width = self.size * 0.8
+                pygame.draw.rect(screen, BLACK, 
+                               (self.x + self.size/2 - progress_width/2, self.y - 7, 
+                                progress_width, 5), 1)
+                pygame.draw.rect(screen, GREEN, 
+                               (self.x + self.size/2 - progress_width/2, self.y - 7, 
+                                progress_width * repair_progress, 5))
+                
         elif self.state == "cooldown":
             # Draw a clock-like circle during cooldown
             pygame.draw.circle(screen, WHITE, 

@@ -23,7 +23,7 @@ ORANGE = (255, 165, 0)
 DARKORANGE = (255, 60, 0)
 WHITE = (255, 255, 255)
 PURPLE = (150, 0, 255)
-
+CYAN = (0, 255, 255)  # Color for Builder
 # Game Settings
 WIDTH, HEIGHT = 1024, 768
 UIBARHEIGHT = 50  # Increased from 40
@@ -50,6 +50,15 @@ HOUSE_SIZE = 40
 HOUSE_HEALTH = 100
 
 TELEPORTER_SIZE = 30
+
+BUILDER_SIZE = 20
+BUILDER_SPEED = 0.75
+BUILDER_REPAIR_AMOUNT = 0.3 # 30% health repair
+BUILDER_REPAIR_RANGE = 30  # Distance to repair house
+BUILDER_COOLDOWN = 360  # 5 seconds at 60FPS will be adjusted as needed for game balance
+BUILDER_SPAWN_LEVEL = 7  # Builders start spawning at level 7
+BUILDER_MAX_COUNT = 2
+
 
 INITIAL_BURNINATION_THRESHOLD = 5
 BURNINATION_DURATION = 300

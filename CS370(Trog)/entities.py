@@ -12,7 +12,7 @@ Classes:
 import pygame
 import random
 import math
-from utils import (HOUSE_HEALTH, HOUSE_SIZE, KNIGHT_CHASE_PROBABILITY, KNIGHT_DIRECTION_CHANGE_INTERVAL,
+from utils import (BUILDER_COOLDOWN, BUILDER_REPAIR_AMOUNT, BUILDER_REPAIR_RANGE, BUILDER_SIZE, BUILDER_SPEED, CYAN, HOUSE_HEALTH, HOUSE_SIZE, KNIGHT_CHASE_PROBABILITY, KNIGHT_DIRECTION_CHANGE_INTERVAL,
                    KNIGHT_SIZE, KNIGHT_SPEED, MERLIN_PROJECTILE_SPEED, PEASANT_DIRECTION_CHANGE_INTERVAL,
                    WIDTH, HEIGHT, RED, DARKGREEN, DARKORANGE, GREEN, BLUE, YELLOW, ORANGE, PURPLE, WHITE, BLACK, TROGDOR_SIZE, TROGDOR_SPEED,
                    TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, PEASANT_SIZE, PEASANT_SPEED, UIBARHEIGHT, LANCER_SPEED, LANCER_SIZE, TELEPORTER_SIZE)
@@ -367,3 +367,104 @@ class ApprenticeMage:
         center_x = self.x + self.size // 2
         center_y = self.y + self.size // 2
         pygame.draw.circle(screen, WHITE, (int(center_x), int(center_y)), self.size // 4)
+
+class Builder:
+    def __init__(self):
+        # Initialize Builder's position, size, speed, and movement direction
+        self.x = random.randint(0, WIDTH - BUILDER_SIZE)
+        self.y = random.randint(UIBARHEIGHT, HEIGHT - BUILDER_SIZE)
+        self.size = BUILDER_SIZE
+        self.speed = BUILDER_SPEED
+        self.direction = random.uniform(0, 2 * math.pi)
+        self.move_timer = 0
+        self.state = "roaming"  # States: "roaming", "repairing", "cooldown"
+        self.cooldown_timer = 0
+        self.target_house = None
+
+    def move(self, houses):
+        # Update state based on houses
+        if self.state == "cooldown":
+            self.cooldown_timer -= 1
+            if self.cooldown_timer <= 0:
+                self.state = "roaming"
+                self.target_house = None
+                
+        if self.state == "roaming":
+            # Check for damaged houses
+            damaged_houses = [house for house in houses if house.health < HOUSE_HEALTH]
+            if damaged_houses:
+                # Find nearest damaged house
+                nearest_house = min(damaged_houses, 
+                                   key=lambda h: math.sqrt((self.x - h.x)**2 + (self.y - h.y)**2))
+                self.target_house = nearest_house
+                self.state = "repairing"
+            else:
+                # Roam randomly like peasants
+                self.move_timer += 1
+                if self.move_timer > PEASANT_DIRECTION_CHANGE_INTERVAL:
+                    self.direction = random.uniform(0, 2 * math.pi)
+                    self.move_timer = 0
+                
+                dx = math.cos(self.direction) * self.speed
+                dy = math.sin(self.direction) * self.speed
+                self.x = max(0, min(WIDTH - self.size, self.x + dx))
+                self.y = max(UIBARHEIGHT, min(HEIGHT - self.size, self.y + dy))
+                
+        elif self.state == "repairing":
+            if not self.target_house or self.target_house.health >= HOUSE_HEALTH:
+                # House is fully repaired or gone
+                self.state = "cooldown"
+                self.cooldown_timer = BUILDER_COOLDOWN
+                self.target_house = None
+            else:
+                # Move towards target house
+                dx = self.target_house.x - self.x
+                dy = self.target_house.y - self.y
+                distance = math.sqrt(dx**2 + dy**2)
+                
+                if distance <= BUILDER_REPAIR_RANGE:
+                    # We're close enough to repair
+                    self.repair_house()
+                    self.state = "cooldown"
+                    self.cooldown_timer = BUILDER_COOLDOWN
+                else:
+                    # Move towards house
+                    speed = min(self.speed, distance)
+                    self.x += (dx / distance) * speed
+                    self.y += (dy / distance) * speed
+
+    def repair_house(self):
+        if self.target_house:
+            # Repair by percentage of max health
+            repair_amount = HOUSE_HEALTH * BUILDER_REPAIR_AMOUNT
+            self.target_house.health = min(HOUSE_HEALTH, self.target_house.health + repair_amount)
+
+    def draw(self, screen):
+        # Draw Builder on the screen
+        pygame.draw.rect(screen, CYAN, (self.x, self.y, self.size, self.size))
+        
+        # Add a tool icon to make builder visually distinct
+        if self.state == "repairing":
+            # Draw wrench or hammer when repairing
+            pygame.draw.line(screen, BLACK, 
+                           (self.x + 5, self.y + 5), 
+                           (self.x + self.size - 5, self.y + self.size - 5), 
+                           2)
+            pygame.draw.line(screen, BLACK, 
+                           (self.x + self.size - 5, self.y + 5), 
+                           (self.x + 5, self.y + self.size - 5), 
+                           2)
+        elif self.state == "cooldown":
+            # Draw a clock-like circle during cooldown
+            pygame.draw.circle(screen, WHITE, 
+                             (int(self.x + self.size/2), int(self.y + self.size/2)), 
+                             int(self.size/3), 1)
+            
+            # Draw a hand of the clock based on cooldown progress
+            angle = 2 * math.pi * (1 - self.cooldown_timer / BUILDER_COOLDOWN)
+            hand_x = self.x + self.size/2 + math.cos(angle) * (self.size/3 - 2)
+            hand_y = self.y + self.size/2 + math.sin(angle) * (self.size/3 - 2)
+            pygame.draw.line(screen, WHITE, 
+                           (int(self.x + self.size/2), int(self.y + self.size/2)),
+                           (int(hand_x), int(hand_y)), 
+                           1)

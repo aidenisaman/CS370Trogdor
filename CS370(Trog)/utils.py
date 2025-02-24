@@ -5,10 +5,6 @@ Constants:
 - Color definitions (e.g., BLACK, RED, GREEN)
 - Game settings (e.g., WIDTH, HEIGHT, FPS)
 - Entity-specific constants (e.g., TROGDOR_SIZE, PEASANT_SPEED)
-
-Functions:
-- draw_burnination_bar(screen: pygame.Surface, trogdor: Trogdor, burnination_duration: int) -> None:
-  Utility function to draw the burnination bar on the screen.
 """
 import pygame
 
@@ -24,6 +20,7 @@ DARKORANGE = (255, 60, 0)
 WHITE = (255, 255, 255)
 PURPLE = (150, 0, 255)
 CYAN = (0, 255, 255)  # Color for Builder
+
 # Game Settings
 WIDTH, HEIGHT = 1024, 768
 UIBARHEIGHT = 50  # Increased from 40
@@ -51,15 +48,6 @@ HOUSE_HEALTH = 100
 
 TELEPORTER_SIZE = 30
 
-BUILDER_SIZE = 20
-BUILDER_SPEED = 0.75
-BUILDER_REPAIR_AMOUNT = 0.3 # 30% health repair
-BUILDER_REPAIR_RANGE = 30  # Distance to repair house
-BUILDER_COOLDOWN = 360  # 5 seconds at 60FPS will be adjusted as needed for game balance
-BUILDER_SPAWN_LEVEL = 7  # Builders start spawning at level 7
-BUILDER_MAX_COUNT = 2
-
-
 INITIAL_BURNINATION_THRESHOLD = 5
 BURNINATION_DURATION = 300
 PEASANT_SPAWN_PROBABILITY = 0.02
@@ -85,8 +73,17 @@ LANCELOT_AIM_DURATION = 120
 LANCELOT_VULNERABLE_DURATION = 300
 
 BOSS_HEALTH_BAR_WIDTH = 800
-BOSS_HEALTH_BAR_HEIGHT =430
+BOSS_HEALTH_BAR_HEIGHT = 430
 BOSS_HEALTH_BAR_BORDER = 5
+
+# Basilisk Boss Settings
+BASILISK_HEAD_SIZE = 30
+BASILISK_SEGMENT_SIZE = 25
+BASILISK_SEGMENTS = 10  # Total segments including head
+BASILISK_SPEED = 2
+BASILISK_BURROW_DURATION = 120  # 2 seconds at 60 FPS
+BASILISK_POISON_DURATION = 300  # 5 seconds at 60 FPS
+BASILISK_PHASE_HEALTH = 2  # Health thresholds for phase changes
 
 # Power-up Settings
 POWER_UP_DURATION_MULTIPLIER = 1.5
@@ -102,4 +99,24 @@ PEASANTS_KILLED = 0
 ENEMIES_KILLED = 0
 BOSSES_KILLED = 0
 
+# Builder Settings
+BUILDER_SIZE = 20
+BUILDER_SPEED = 0.75
+BUILDER_REPAIR_AMOUNT = 0.3  # 30% health repair
+BUILDER_REPAIR_RANGE = 30  # Distance to repair house
+BUILDER_COOLDOWN = 300  # 5 seconds at 60FPS
+BUILDER_SPAWN_LEVEL = 7  # Builders start spawning at level 7
+BUILDER_MAX_COUNT = 2
 
+# Game area definitions
+GAME_AREA_OUTSKIRTS = "outskirts"  # Levels 1-4, Boss at level 3
+GAME_AREA_TOWNS = "towns"          # Levels 5-8, Boss at level 7
+GAME_AREA_WIZARDS = "wizards"      # Levels 9-11, Boss at level 10 
+GAME_AREA_CASTLE = "castle"        # Levels 12-13, Final Boss at level 13
+
+# Boss levels
+BOSS_LEVELS = [3, 7, 10, 13]
+BOSS_BASILISK = "basilisk"
+BOSS_LANCELOT = "lancelot"
+BOSS_MERLIN = "merlin"
+BOSS_DRAGONKING = "dragonking"

@@ -416,6 +416,16 @@ class Basilisk:
         self.constrict_radius = 200
         self.constrict_timer = 0
         
+        # New constriction properties
+        self.shrinking_constrict = False
+        self.constrict_warning_timer = 0
+        self.constrict_warning_duration = 90  # 1.5 seconds warning
+        self.constrict_min_radius = 100
+        self.constrict_shrink_rate = 0.5
+        self.constrict_damage_radius = 150
+        self.constrict_visual_radius = 0
+        self.constrict_target = None
+        
         # Visual feedback
         self.flash_timer = 0
 
@@ -455,23 +465,43 @@ class Basilisk:
 
     def _update_normal(self, trogdor):
         # Phase 3 special: constriction attack
-        if self.phase == 3 and random.random() < 0.005 and not self.constricting:
-            self.constricting = True
-            self.constrict_center = (self.x, self.y)
-            self.constrict_radius = 200
-            self.constrict_timer = 0
-            self.turn_timer = 0
+        if self.phase == 3 and random.random() < 0.005 and not self.constricting and not self.shrinking_constrict:
+            self.shrinking_constrict = True
+            self.constrict_warning_timer = self.constrict_warning_duration
+            self.constrict_target = trogdor  # Target the player
+
+        # Warning phase before constriction
+        if self.shrinking_constrict:
+            self.constrict_warning_timer -= 1
+            
+            # After warning period, start actual constriction
+            if self.constrict_warning_timer <= 0:
+                self.shrinking_constrict = False
+                self.constricting = True
+                self.constrict_center = (trogdor.x, trogdor.y)  # Center on player's position
+                self.constrict_radius = 300  # Start with larger radius
+                self.constrict_visual_radius = self.constrict_radius
+                self.constrict_timer = 0
+                self.turn_timer = 0
             
         # Constriction attack movement
         if self.constricting:
             self.constrict_timer += 1
-            if self.constrict_timer > 360:  # 6 seconds of constriction
+            
+            # Gradually shrink the radius
+            if self.constrict_radius > self.constrict_min_radius:
+                self.constrict_radius -= self.constrict_shrink_rate
+            
+            # Smooth visual radius adjustment for animation
+            self.constrict_visual_radius = self.constrict_radius + 10 * math.sin(self.constrict_timer * 0.1)
+            
+            if self.constrict_timer > 420:  # 7 seconds of constriction (increased from 6)
                 self.constricting = False
                 self.turn_timer = 0
                 self.angle = random.uniform(0, 2 * math.pi)
             else:
                 # Move in circles around the center
-                angle_offset = (self.constrict_timer / 60) * 2 * math.pi
+                angle_offset = (self.constrict_timer / 70) * 2 * math.pi
                 self.angle = angle_offset
                 target_x = self.constrict_center[0] + math.cos(angle_offset) * self.constrict_radius
                 target_y = self.constrict_center[1] + math.sin(angle_offset) * self.constrict_radius
@@ -481,8 +511,8 @@ class Basilisk:
                 dy = target_y - self.y
                 distance = math.sqrt(dx**2 + dy**2)
                 if distance > 0:
-                    self.x += (dx / distance) * self.speed * 1.5
-                    self.y += (dy / distance) * self.speed * 1.5
+                    self.x += (dx / distance) * self.speed * 2.0  # Faster movement during constriction
+                    self.y += (dy / distance) * self.speed * 2.0
         else:
             # Regular movement with periodic direction changes
             self.turn_timer += 1
@@ -618,7 +648,7 @@ class Basilisk:
         # Draw shed skins first (behind the snake)
         for skin in self.shed_skins:
             skin.draw(screen)
-            
+        
         # Draw poison trails
         for trail in self.poison_trails:
             trail.draw(screen)
@@ -626,130 +656,356 @@ class Basilisk:
         # Draw "burrowing" or "emerging" indicators
         if self.state == "burrowing":
             # Draw dust particles radiating from head
-            for _ in range(5):
+            for _ in range(10):  # More dust particles
                 angle = random.uniform(0, 2 * math.pi)
-                distance = random.randint(10, 30)
+                distance = random.randint(10, 50)  # Wider dust cloud
                 particle_x = self.x + math.cos(angle) * distance
                 particle_y = self.y + math.sin(angle) * distance
                 
                 pygame.draw.circle(screen, (150, 130, 100), 
-                                 (int(particle_x), int(particle_y)), 
-                                 random.randint(2, 5))
+                                  (int(particle_x), int(particle_y)), 
+                                  random.randint(3, 8))  # Larger particles
         
         elif self.state == "emerging":
-            # Draw ground disturbance circles
-            size = int(30 * (1 - self.state_timer / 30))
-            pygame.draw.circle(screen, (150, 130, 100), 
-                             (int(self.x), int(self.y)), 
-                             size, 2)
-            pygame.draw.circle(screen, (150, 130, 100), 
-                             (int(self.x), int(self.y)), 
-                             size - 5, 1)
+            # Draw ground disturbance circles with more impact
+            size = int(50 * (1 - self.state_timer / 30))
+            for i in range(3):  # Multiple rings for more dramatic effect
+                scale = 1.0 - (i * 0.2)
+                pygame.draw.circle(screen, (150, 130, 100), 
+                                 (int(self.x), int(self.y)), 
+                                 int(size * scale), 3)
         
         # Draw the body segments (from tail to head)
         for i, pos in enumerate(reversed(self.segments[1:])):
             # Skip head (index 0)
             segment_index = BASILISK_SEGMENTS - i - 2  # Index from tail (0) to neck (n-2)
             
-            # Determine segment color
+            # Calculate segment size - taper from head to tail
+            segment_size_factor = 0.7 + (0.3 * segment_index / (BASILISK_SEGMENTS - 1))
+            current_segment_size = self.segment_size * segment_size_factor
+            
+            # Determine segment color with gradient effect - darker at tail, brighter near head
             if self.state == "burrowing":
                 # Only draw segments that haven't burrowed yet
                 if segment_index < self.state_timer / (BASILISK_BURROW_DURATION / BASILISK_SEGMENTS):
                     alpha = 255 * (1 - segment_index / (BASILISK_SEGMENTS - 1))
-                    segment_color = (0, 100, 0)
+                    base_color = (0, 120, 0)
                 else:
                     continue
             elif self.state == "emerging":
                 # Only draw segments that have emerged
                 if segment_index > (BASILISK_SEGMENTS - 1) * (1 - self.state_timer / 30):
-                    segment_color = (0, 150, 0)
+                    green_value = 100 + int(80 * segment_index / (BASILISK_SEGMENTS - 1))
+                    base_color = (0, green_value, 0)
                 else:
                     continue
             else:
-                # Normal drawing
-                segment_color = (0, 150, 0)  # Green for body
-                
+                # Normal drawing with gradient
+                green_value = 100 + int(100 * segment_index / (BASILISK_SEGMENTS - 1))
+                blue_value = int(70 * segment_index / (BASILISK_SEGMENTS - 1))
+                base_color = (0, green_value, blue_value)  # Green-blue gradient
+                    
                 # Flash white when damaged
                 if self.flash_timer > 0 and self.flash_timer % 2 == 0:
-                    segment_color = (255, 255, 255)
+                    base_color = (255, 255, 255)
+            
+            # Phase 3 body glowing effect
+            if self.phase == 3 and not (self.flash_timer > 0 and self.flash_timer % 2 == 0):
+                pulse = abs(math.sin(pygame.time.get_ticks() * 0.003 + segment_index * 0.2))
+                base_color = (
+                    min(base_color[0] + int(20 * pulse), 255),
+                    min(base_color[1] + int(20 * pulse), 255),
+                    min(base_color[2] + int(50 * pulse), 255)
+                )
                     
             # Draw the segment as a circle
-            pygame.draw.circle(screen, segment_color, 
-                             (int(pos[0]), int(pos[1])), 
-                             int(self.segment_size / 2))
+            pygame.draw.circle(screen, base_color, 
+                              (int(pos[0]), int(pos[1])), 
+                              int(current_segment_size / 2))
             
-            # Add scales pattern
-            scale_color = (0, 180, 0)
-            pygame.draw.arc(screen, scale_color, 
-                           (int(pos[0] - self.segment_size/3), 
-                            int(pos[1] - self.segment_size/3),
-                            int(self.segment_size/1.5), 
-                            int(self.segment_size/1.5)), 
-                           0, math.pi, 2)
+            # Add scales pattern - more detailed
+            scale_color = (
+                min(base_color[0] + 20, 255),
+                min(base_color[1] + 30, 255),
+                min(base_color[2] + 20, 255)
+            )
+            
+            # Draw multiple scale arcs along the body
+            for j in range(3):
+                scale_angle = (segment_index * 0.2 + j * (2 * math.pi / 3)) % (2 * math.pi)
+                scale_size = current_segment_size * 0.4
+                
+                pygame.draw.arc(screen, scale_color, 
+                              (int(pos[0] - scale_size), 
+                               int(pos[1] - scale_size),
+                               int(scale_size * 2), 
+                               int(scale_size * 2)), 
+                              scale_angle, scale_angle + math.pi, 2)
 
         # Draw the head
         if self.state != "burrowing" or self.state_timer > BASILISK_BURROW_DURATION - 10:
-            head_color = (0, 200, 0)  # Brighter green for head
-            
-            # Change color based on state
+            # Base head color
             if self.state == "vulnerable":
                 head_color = (200, 50, 50)  # Red when vulnerable
             elif self.state == "shedding":
                 head_color = (200, 200, 100)  # Yellow-ish when shedding
+            else:
+                # Normal green with phase-dependent intensity
+                green_intensity = 120 + (40 * self.phase)
+                head_color = (20, green_intensity, 50)
                 
             # Flash white when damaged
             if self.flash_timer > 0 and self.flash_timer % 2 == 0:
                 head_color = (255, 255, 255)
                 
-            # Draw the head as a slightly larger circle
+            # Draw the head as a larger circle
             pygame.draw.circle(screen, head_color, 
-                             (int(self.x), int(self.y)), 
-                             int(self.head_size / 2))
-                             
-            # Draw eyes
-            eye_offset = 8
-            eye_size = 5
+                              (int(self.x), int(self.y)), 
+                              int(self.head_size / 2))
+            
+            # Add crown/crest for a more regal look
+            crown_color = (220, 180, 0)  # Gold color
+            crown_points = []
+            crown_radius = self.head_size * 0.6
+            crown_spikes = 5
+            
+            for i in range(crown_spikes * 2):
+                angle = self.angle + (i * math.pi / crown_spikes) + math.pi
+                # Alternating spike heights
+                radius = crown_radius * (0.5 if i % 2 == 0 else 0.7)
+                crown_points.append((
+                    self.x + math.cos(angle) * radius,
+                    self.y + math.sin(angle) * radius
+                ))
+            
+            if len(crown_points) >= 3:  # Need at least 3 points for a polygon
+                pygame.draw.polygon(screen, crown_color, crown_points)
+                              
+            # Draw eyes - larger, more detailed
+            eye_offset = self.head_size * 0.3
+            eye_size = self.head_size * 0.15
             eye_angle = self.angle
             
             # Calculate eye positions
-            left_eye_x = self.x + math.cos(eye_angle - 0.5) * eye_offset
-            left_eye_y = self.y + math.sin(eye_angle - 0.5) * eye_offset
+            left_eye_x = self.x + math.cos(eye_angle - 0.4) * eye_offset
+            left_eye_y = self.y + math.sin(eye_angle - 0.4) * eye_offset
             
-            right_eye_x = self.x + math.cos(eye_angle + 0.5) * eye_offset
-            right_eye_y = self.y + math.sin(eye_angle + 0.5) * eye_offset
+            right_eye_x = self.x + math.cos(eye_angle + 0.4) * eye_offset
+            right_eye_y = self.y + math.sin(eye_angle + 0.4) * eye_offset
             
-            # Draw the eyes
-            pygame.draw.circle(screen, (0, 0, 0), 
-                             (int(left_eye_x), int(left_eye_y)), 
-                             eye_size)
-            pygame.draw.circle(screen, (0, 0, 0), 
-                             (int(right_eye_x), int(right_eye_y)), 
-                             eye_size)
+            # Draw eye sockets
+            pygame.draw.circle(screen, (10, 50, 10), 
+                              (int(left_eye_x), int(left_eye_y)), 
+                              int(eye_size * 1.2))
+            pygame.draw.circle(screen, (10, 50, 10), 
+                              (int(right_eye_x), int(right_eye_y)), 
+                              int(eye_size * 1.2))
             
-            # Add "forked tongue" when not vulnerable
+            # Draw the eyes with glowing effect
+            eye_pulse = abs(math.sin(pygame.time.get_ticks() * 0.005))
+            if self.phase == 3:
+                # Glowing red eyes in phase 3
+                eye_color = (220, 50 + int(50 * eye_pulse), 0)
+            else:
+                # Normal eyes with slight glow
+                eye_color = (200, 200 + int(55 * eye_pulse), 0)
+                
+            pygame.draw.circle(screen, eye_color, 
+                              (int(left_eye_x), int(left_eye_y)), 
+                              int(eye_size))
+            pygame.draw.circle(screen, eye_color, 
+                              (int(right_eye_x), int(right_eye_y)), 
+                              int(eye_size))
+            
+            # Add smaller pupil
+            pupil_color = (0, 0, 0)
+            pupil_offset = eye_size * 0.3
+            pygame.draw.circle(screen, pupil_color, 
+                              (int(left_eye_x + math.cos(eye_angle) * pupil_offset), 
+                               int(left_eye_y + math.sin(eye_angle) * pupil_offset)), 
+                              int(eye_size * 0.4))
+            pygame.draw.circle(screen, pupil_color, 
+                              (int(right_eye_x + math.cos(eye_angle) * pupil_offset), 
+                               int(right_eye_y + math.sin(eye_angle) * pupil_offset)), 
+                              int(eye_size * 0.4))
+            
+            # Add "forked tongue" when not vulnerable - more detailed
             if self.state != "vulnerable":
-                tongue_length = 15
-                tongue_angle1 = eye_angle + 0.2
-                tongue_angle2 = eye_angle - 0.2
-                
-                tongue_x1 = self.x + math.cos(tongue_angle1) * tongue_length
-                tongue_y1 = self.y + math.sin(tongue_angle1) * tongue_length
-                
-                tongue_x2 = self.x + math.cos(tongue_angle2) * tongue_length
-                tongue_y2 = self.y + math.sin(tongue_angle2) * tongue_length
+                tongue_length = self.head_size * 0.8
+                tongue_width = self.head_size * 0.1
+                tongue_angle1 = eye_angle + 0.15
+                tongue_angle2 = eye_angle - 0.15
                 
                 tongue_start_x = self.x + math.cos(eye_angle) * self.head_size/2
                 tongue_start_y = self.y + math.sin(eye_angle) * self.head_size/2
                 
-                # Draw the forked tongue
+                # Calculate fork positions
+                mid_x = tongue_start_x + math.cos(eye_angle) * (tongue_length * 0.6)
+                mid_y = tongue_start_y + math.sin(eye_angle) * (tongue_length * 0.6)
+                
+                tip1_x = mid_x + math.cos(tongue_angle1) * (tongue_length * 0.4)
+                tip1_y = mid_y + math.sin(tongue_angle1) * (tongue_length * 0.4)
+                
+                tip2_x = mid_x + math.cos(tongue_angle2) * (tongue_length * 0.4)
+                tip2_y = mid_y + math.sin(tongue_angle2) * (tongue_length * 0.4)
+                
+                # Draw tongue with animation
+                flick_offset = math.sin(pygame.time.get_ticks() * 0.01) * (tongue_width * 0.5)
+                
+                # Main part of tongue
                 pygame.draw.line(screen, (200, 0, 0), 
                                (tongue_start_x, tongue_start_y), 
-                               (tongue_x1, tongue_y1), 2)
+                               (mid_x, mid_y), int(tongue_width))
+                
+                # Forked tips with animation
                 pygame.draw.line(screen, (200, 0, 0), 
-                               (tongue_start_x, tongue_start_y), 
-                               (tongue_x2, tongue_y2), 2)
-        
-        # Draw health bar
+                               (mid_x, mid_y), 
+                               (tip1_x + flick_offset, tip1_y + flick_offset), int(tongue_width * 0.7))
+                pygame.draw.line(screen, (200, 0, 0), 
+                               (mid_x, mid_y), 
+                               (tip2_x + flick_offset, tip2_y - flick_offset), int(tongue_width * 0.7))
+    
+        # Draw constriction circle visual effects
+        if self.shrinking_constrict:
+            # Draw warning circle pulsating with more dramatic effect
+            pulse = abs(math.sin(pygame.time.get_ticks() * 0.015)) 
+            radius = 300 * (0.8 + 0.2 * pulse)
+            
+            # Create a surface with alpha
+            warning_surface = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
+            
+            # Draw multiple rings with gradient colors for dramatic effect
+            for i in range(3):
+                ring_radius = radius * (1 - i * 0.15)
+                alpha = int(200 * pulse) - (i * 40)
+                warning_color = (255, 50 + i * 20, 20, max(0, alpha))
+                ring_width = max(2, 6 - i)
+                pygame.draw.circle(warning_surface, warning_color, (radius, radius), ring_radius, ring_width)
+            
+            # Add pulsating runes/symbols around the circle
+            for i in range(8):
+                angle = i * (2 * math.pi / 8) + (pygame.time.get_ticks() * 0.001)
+                rune_x = radius + math.cos(angle) * (radius * 0.8)
+                rune_y = radius + math.sin(angle) * (radius * 0.8)
+                
+                rune_color = (220, 100, 50, int(200 * pulse))
+                rune_size = 15 + int(5 * pulse)
+                
+                # Draw a rune symbol (simplified as a small star)
+                for j in range(5):
+                    star_angle = j * (2 * math.pi / 5) + angle
+                    x1 = rune_x + math.cos(star_angle) * (rune_size * 0.5)
+                    y1 = rune_y + math.sin(star_angle) * (rune_size * 0.5)
+                    x2 = rune_x + math.cos(star_angle + 2 * math.pi / 10) * (rune_size)
+                    y2 = rune_y + math.sin(star_angle + 2 * math.pi / 10) * (rune_size)
+                    pygame.draw.line(warning_surface, rune_color, (x1, y1), (x2, y2), 2)
+            
+            # Add a dramatic flare effect in the center
+            flare_color = (255, 200, 100, int(150 * pulse))
+            flare_radius = 50 + int(30 * pulse)
+            pygame.draw.circle(warning_surface, flare_color, (radius, radius), flare_radius)
+            
+            # Draw at player position
+            screen.blit(warning_surface, 
+                       (int(self.constrict_target.x - radius), 
+                        int(self.constrict_target.y - radius)))
+
+        elif self.constricting:
+            # Draw constriction circle with magical serpent energy effect
+            circle_surface = pygame.Surface((self.constrict_visual_radius * 2, 
+                                            self.constrict_visual_radius * 2), pygame.SRCALPHA)
+            
+            # Base circle with glow
+            base_pulse = abs(math.sin(self.constrict_timer * 0.02))
+            
+            # Draw multiple rings with varying opacity for depth
+            for i in range(3):
+                ring_radius = self.constrict_visual_radius - (i * 4)
+                alpha = 130 - (i * 30)
+                
+                # Color depends on phase
+                if self.phase == 3:
+                    ring_color = (180, 50, 150, alpha)  # Purple hue for phase 3
+                else:
+                    ring_color = (200, 80, 50, alpha)  # Red-orange for earlier phases
+                    
+                pygame.draw.circle(circle_surface, ring_color, 
+                                  (self.constrict_visual_radius, self.constrict_visual_radius), 
+                                  ring_radius, 4 - i)
+            
+            # Energy ripples along the circle
+            num_ripples = 24
+            ripple_size = 14
+            for i in range(num_ripples):
+                angle = i * (2 * math.pi / num_ripples) + (self.constrict_timer * 0.03)
+                ripple_x = self.constrict_visual_radius + math.cos(angle) * self.constrict_visual_radius
+                ripple_y = self.constrict_visual_radius + math.sin(angle) * self.constrict_visual_radius
+                
+                # Ripple pulses
+                ripple_pulse = abs(math.sin(angle + self.constrict_timer * 0.1))
+                ripple_color = (100, 220, 50, 150 + int(105 * ripple_pulse))
+                
+                # Draw the ripple as a small glowing orb
+                for j in range(3):
+                    orb_size = ripple_size * (1 - j * 0.2) * (0.7 + 0.3 * ripple_pulse)
+                    orb_alpha = int(150 * (1 - j * 0.3))
+                    orb_color = (ripple_color[0], ripple_color[1], ripple_color[2], orb_alpha)
+                    pygame.draw.circle(circle_surface, orb_color, 
+                                      (int(ripple_x), int(ripple_y)), 
+                                      int(orb_size))
+            
+            # Draw snake scales pattern along the circle
+            scale_count = 36
+            for i in range(scale_count):
+                angle = i * (2 * math.pi / scale_count) + (self.constrict_timer * 0.01)
+                scale_dist = self.constrict_visual_radius * 0.9
+                scale_x = self.constrict_visual_radius + math.cos(angle) * scale_dist
+                scale_y = self.constrict_visual_radius + math.sin(angle) * scale_dist
+                
+                # Draw a scale-like shape
+                scale_color = (0, 180, 30, 200)
+                scale_size = 12
+                
+                # Create a scale shape with arcs
+                arc_rect = pygame.Rect(
+                    scale_x - scale_size,
+                    scale_y - scale_size,
+                    scale_size * 2,
+                    scale_size * 2
+                )
+                
+                # Draw arc facing outward from circle
+                arc_start = angle - 0.3
+                arc_end = angle + 0.3
+                pygame.draw.arc(circle_surface, scale_color, arc_rect, arc_start, arc_end, 3)
+            
+            # Add magical energy rays emanating from center (more visible as circle shrinks)
+            ray_intensity = 100 + int(100 * (1 - self.constrict_radius / 300))
+            ray_count = 8
+            for i in range(ray_count):
+                angle = i * (2 * math.pi / ray_count) + (self.constrict_timer * 0.005)
+                ray_color = (220, 200, 50, ray_intensity)
+                
+                # Draw ray from center to edge
+                start_x = self.constrict_visual_radius
+                start_y = self.constrict_visual_radius
+                end_x = self.constrict_visual_radius + math.cos(angle) * self.constrict_visual_radius
+                end_y = self.constrict_visual_radius + math.sin(angle) * self.constrict_visual_radius
+                
+                # Draw with varying widths for a light beam effect
+                for w in range(3):
+                    ray_width = 5 - w * 1.5
+                    ray_alpha = ray_intensity - (w * 30)
+                    current_color = (ray_color[0], ray_color[1], ray_color[2], max(0, ray_alpha))
+                    pygame.draw.line(circle_surface, current_color, 
+                                   (start_x, start_y), 
+                                   (end_x, end_y), 
+                                   int(ray_width))
+            
+            screen.blit(circle_surface, 
+                       (int(self.constrict_center[0] - self.constrict_visual_radius),
+                        int(self.constrict_center[1] - self.constrict_visual_radius)))
+                        
         self.draw_health_bar(screen)
     
     def draw_health_bar(self, screen):

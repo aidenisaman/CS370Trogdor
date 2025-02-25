@@ -96,9 +96,11 @@ def update_basilisk_boss(boss, trogdor, game_state, game_stats, spawn_time, jump
     
     # Check for collisions with poison trails
     for trail in boss.poison_trails:
-        if is_invulnerable(game_stats['timeF'], spawn_time):
+        if not is_invulnerable(game_stats['timeF'], spawn_time):  # Fixed from is_invulnerable()
             if math.sqrt((trogdor.x - trail.x)**2 + (trogdor.y - trail.y)**2) < trogdor.size/2 + trail.size/2:
-                damage_player(trogdor, game_state, game_stats, slash_noise, spawn_time)
+                slash_noise.play()
+                game_state['lives'] -= 1
+                trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                 spawn_time = game_stats['timeF']
                 if game_state['lives'] <= 0:
                     if handle_game_over(screen, game_state, game_stats, spawn_time, jump_time) == "exit":
@@ -107,10 +109,13 @@ def update_basilisk_boss(boss, trogdor, game_state, game_stats, spawn_time, jump
                         return create_boss(get_current_area(game_state['level']), game_state['level']), spawn_time, False
 
     # Check for collisions with basilisk body segments
-    if is_invulnerable(game_stats['timeF'], spawn_time) and boss.state != "burrowing":
-        for pos in boss.segments:
+    if not is_invulnerable(game_stats['timeF'], spawn_time) and boss.state != "burrowing":  # Fixed from is_invulnerable()
+        for i in range(0, len(boss.segments), 5):  # Check every 5th segment for better performance
+            pos = boss.segments[i]
             if math.sqrt((trogdor.x - pos[0])**2 + (trogdor.y - pos[1])**2) < trogdor.size/2 + boss.segment_size/2:
-                damage_player(trogdor, game_state, game_stats, slash_noise, spawn_time)
+                slash_noise.play()
+                game_state['lives'] -= 1
+                trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                 spawn_time = game_stats['timeF']
                 if game_state['lives'] <= 0:
                     if handle_game_over(screen, game_state, game_stats, spawn_time, jump_time) == "exit":

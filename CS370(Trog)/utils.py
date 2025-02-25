@@ -77,9 +77,9 @@ BOSS_HEALTH_BAR_HEIGHT = 430
 BOSS_HEALTH_BAR_BORDER = 5
 
 # Basilisk Boss Settings
-BASILISK_HEAD_SIZE = 30
-BASILISK_SEGMENT_SIZE = 25
-BASILISK_SEGMENTS = 10  # Total segments including head
+BASILISK_HEAD_SIZE = 95
+BASILISK_SEGMENT_SIZE = 70
+BASILISK_SEGMENTS = 350  # Total segments including head
 BASILISK_SPEED = 2
 BASILISK_BURROW_DURATION = 120  # 2 seconds at 60 FPS
 BASILISK_POISON_DURATION = 300  # 5 seconds at 60 FPS
@@ -115,7 +115,7 @@ GAME_AREA_WIZARDS = "wizards"      # Levels 9-11, Boss at level 10
 GAME_AREA_CASTLE = "castle"        # Levels 12-13, Final Boss at level 13
 
 # Boss levels
-BOSS_LEVELS = [3, 7, 10, 13]
+BOSS_LEVELS = [5, 10, 15, 20]
 BOSS_BASILISK = "basilisk"
 BOSS_LANCELOT = "lancelot"
 BOSS_MERLIN = "merlin"

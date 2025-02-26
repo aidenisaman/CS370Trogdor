@@ -57,16 +57,13 @@ def create_boss(area, level):
         
     return None
 
-def is_invulnerable(current_time, spawn_time):
-    """Check if Trogdor is currently invulnerable."""
-    return spawn_time + 200 < current_time
-
 def damage_player(trogdor, game_state, game_stats, slash_noise, spawn_time):
-    """Handle player damage logic and return new spawn time."""
+    """Handle player damage logic."""
     slash_noise.play()
     game_state['lives'] -= 1
     trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
     trogdor.peasants_stomped = 0
+    trogdor.make_invincible()  # Make trogdor invincible after damage
     return spawn_time
 
 def handle_game_over(screen, game_state, game_stats, spawn_time, jump_time):
@@ -95,13 +92,13 @@ def update_basilisk_boss(boss, trogdor, game_state, game_stats, spawn_time, jump
     game_completed = False
     
     # Check for collisions with poison trails
-    for trail in boss.poison_trails:
-        if not is_invulnerable(game_stats['timeF'], spawn_time):  # Fixed from is_invulnerable()
+    if not trogdor.is_invincible:  # Use new invincibility check
+        for trail in boss.poison_trails:
             if math.sqrt((trogdor.x - trail.x)**2 + (trogdor.y - trail.y)**2) < trogdor.size/2 + trail.size/2:
                 slash_noise.play()
                 game_state['lives'] -= 1
                 trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
-                spawn_time = game_stats['timeF']
+                trogdor.make_invincible()  # Make trogdor invincible
                 if game_state['lives'] <= 0:
                     if handle_game_over(screen, game_state, game_stats, spawn_time, jump_time) == "exit":
                         return None, spawn_time, True
@@ -109,14 +106,14 @@ def update_basilisk_boss(boss, trogdor, game_state, game_stats, spawn_time, jump
                         return create_boss(get_current_area(game_state['level']), game_state['level']), spawn_time, False
 
     # Check for collisions with basilisk body segments
-    if not is_invulnerable(game_stats['timeF'], spawn_time) and boss.state != "burrowing":  # Fixed from is_invulnerable()
+    if not trogdor.is_invincible and boss.state != "burrowing":  # Use new invincibility check
         for i in range(0, len(boss.segments), 5):  # Check every 5th segment for better performance
             pos = boss.segments[i]
             if math.sqrt((trogdor.x - pos[0])**2 + (trogdor.y - pos[1])**2) < trogdor.size/2 + boss.segment_size/2:
                 slash_noise.play()
                 game_state['lives'] -= 1
                 trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
-                spawn_time = game_stats['timeF']
+                trogdor.make_invincible()  # Make trogdor invincible
                 if game_state['lives'] <= 0:
                     if handle_game_over(screen, game_state, game_stats, spawn_time, jump_time) == "exit":
                         return None, spawn_time, True
@@ -146,11 +143,13 @@ def update_lancelot_boss(boss, trogdor, game_state, game_stats, spawn_time, jump
             game_state['level'] += 1
             handle_level_advance(screen, trogdor, game_state, game_stats)
             return create_boss(get_current_area(game_state['level']), game_state['level']), spawn_time, False
-    elif boss.state == "charging" and is_invulnerable(game_stats['timeM'], spawn_time):
+    elif boss.state == "charging" and not trogdor.is_invincible:
         if (abs(trogdor.x - boss.x) < trogdor.size + boss.size and
             abs(trogdor.y - boss.y) < trogdor.size + boss.size):
-            damage_player(trogdor, game_state, game_stats, slash_noise, spawn_time)
-            spawn_time = game_stats['timeM']
+            slash_noise.play()
+            game_state['lives'] -= 1
+            trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+            trogdor.make_invincible()  # Make trogdor invincible
             if game_state['lives'] <= 0:
                 if handle_game_over(screen, game_state, game_stats, spawn_time, jump_time) == "exit":
                     return None, spawn_time, True
@@ -191,11 +190,13 @@ def update_dragonking_boss(boss, trogdor, game_state, game_stats, spawn_time, ju
             return create_boss(get_current_area(game_state['level']), game_state['level']), spawn_time, False
     else:
         for fx, fy, _ in boss.fire_breath:
-            if is_invulnerable(game_stats['timeS'], spawn_time):
+            if not trogdor.is_invincible:  # Use new invincibility check
                 if (abs(trogdor.x + trogdor.size/2 - fx) < trogdor.size/2 + 5 and
                     abs(trogdor.y + trogdor.size/2 - fy) < trogdor.size/2 + 5):
-                    damage_player(trogdor, game_state, game_stats, slash_noise, spawn_time)
-                    spawn_time = game_stats['timeS']
+                    slash_noise.play()
+                    game_state['lives'] -= 1
+                    trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                    trogdor.make_invincible()  # Make trogdor invincible
                     trogdor.burnination_mode = False
                     if game_state['lives'] <= 0:
                         if handle_game_over(screen, game_state, game_stats, spawn_time, jump_time) == "exit":
@@ -229,7 +230,7 @@ def update_boss(boss, trogdor, projectiles, game_state, game_stats, spawn_time, 
 
 def check_regular_collisions(trogdor, collision_entities, game_state, game_stats, spawn_time, jump_time, slash_noise, screen):
     """Check for collisions between Trogdor and regular enemies."""
-    if is_invulnerable(game_stats['timeF'], spawn_time):
+    if not trogdor.is_invincible:
         for entity in collision_entities:
             if (abs(trogdor.x - entity.x) < trogdor.size and
                 abs(trogdor.y - entity.y) < trogdor.size):
@@ -237,7 +238,7 @@ def check_regular_collisions(trogdor, collision_entities, game_state, game_stats
                 game_state['lives'] -= 1
                 trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
                 trogdor.peasants_stomped = 0
-                spawn_time = game_stats['timeF']
+                trogdor.make_invincible()  # Make trogdor invincible after hit
                 trogdor.burnination_mode = False
                 if game_state['lives'] <= 0:
                     return handle_game_over(screen, game_state, game_stats, spawn_time, jump_time), spawn_time
@@ -250,7 +251,7 @@ def handle_house_burnination(trogdor, houses, game_state, game_stats, spawn_time
             abs(trogdor.y - house.y) < trogdor.size):
             if trogdor.burnination_mode:
                 house.health -= 2
-                if house.health <= 0 and not house.is_destroyed:
+                if house.health <= 0 and not getattr(house, 'is_destroyed', False):
                     house.is_destroyed = True
                     house.health = 0
                     game_state['houses_crushed'] += 1
@@ -315,6 +316,7 @@ def update_time(game_stats):
 def initialize_game(level):
     """Create game objects for a specific level."""
     trogdor = Trogdor()
+    trogdor.make_invincible()  # Make Trogdor invincible at start of level
     
     # Determine the current game area
     current_area = get_current_area(level)

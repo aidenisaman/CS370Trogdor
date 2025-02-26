@@ -24,7 +24,7 @@ from util_functions import (initialize_game, update_boss, update_time,
                           draw_game_area, check_regular_collisions, 
                           handle_house_burnination, handle_peasant_collisions,
                           update_regular_enemies, get_collision_entities,
-                          handle_game_over, is_invulnerable)
+                          handle_game_over)
 
 # Initialize Pygame
 pygame.init()
@@ -46,7 +46,7 @@ slash_noise.set_volume(.25)
 def game_loop(screen):
     # Initialize game state
     game_state = {
-        'level': 1,
+        'level': 10,
         'houses_crushed': 0,
         'lives': 300,
         'burnination_threshold': INITIAL_BURNINATION_THRESHOLD,

@@ -12,7 +12,7 @@ Classes:
 import pygame
 import random
 import math
-from utils import (BUILDER_COOLDOWN, BUILDER_REPAIR_AMOUNT, BUILDER_REPAIR_RANGE, BUILDER_SIZE, BUILDER_SPEED, CYAN, HOUSE_HEALTH, HOUSE_SIZE, KNIGHT_CHASE_PROBABILITY, KNIGHT_DIRECTION_CHANGE_INTERVAL,
+from utils import (BUILDER_COOLDOWN, BUILDER_REPAIR_AMOUNT, BUILDER_REPAIR_RANGE, BUILDER_SIZE, BUILDER_SPEED, CYAN, FPS, HOUSE_HEALTH, HOUSE_SIZE, KNIGHT_CHASE_PROBABILITY, KNIGHT_DIRECTION_CHANGE_INTERVAL,
                    KNIGHT_SIZE, KNIGHT_SPEED, MERLIN_PROJECTILE_SPEED, PEASANT_DIRECTION_CHANGE_INTERVAL,
                    WIDTH, HEIGHT, RED, DARKGREEN, DARKORANGE, GREEN, BLUE, YELLOW, ORANGE, PURPLE, WHITE, BLACK, TROGDOR_SIZE, TROGDOR_SPEED,
                    TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y, PEASANT_SIZE, PEASANT_SPEED, UIBARHEIGHT, LANCER_SPEED, LANCER_SIZE, TELEPORTER_SIZE)
@@ -27,22 +27,17 @@ class Trogdor:
         self.peasants_stomped = 0
         self.burnination_mode = False
         self.burnination_timer = 0
+        # New invincibility properties
+        self.is_invincible = False
+        self.invincibility_timer = 0
+        self.invincibility_duration = 3 * FPS  # 3 seconds at 60 FPS
+        self.flash_interval = 10  # Flash every 10 frames
+        self.visible = True  # For flashing effect
 
     def move(self, dx, dy):
         # Move Trogdor within the screen boundaries
         self.x = max(0, min(WIDTH - self.size, self.x + dx * self.speed))
         self.y = max(UIBARHEIGHT, min(HEIGHT - self.size, self.y + dy * self.speed))
-
-    def draw(self, screen):
-        # Draw Trogdor on the screen, changing color if in burnination mode
-        color = ORANGE if self.burnination_mode else RED
-        pygame.draw.rect(screen, color, (self.x, self.y, self.size, self.size)) # Body
-        pygame.draw.circle(screen, WHITE, (self.x + 5, self.y + 7), 5) # Eyes
-        pygame.draw.circle(screen, WHITE, (self.x + 15, self.y + 7), 5)
-        pygame.draw.circle(screen, BLACK, (self.x + 5, self.y + 7), 2)
-        pygame.draw.circle(screen, BLACK, (self.x + 15, self.y + 7), 2)
-
-
 
     def update(self):
         # Update Trogdor's burnination mode timer
@@ -50,6 +45,38 @@ class Trogdor:
             self.burnination_timer -= 1
             if self.burnination_timer <= 0:
                 self.burnination_mode = False
+                
+        # Update invincibility status
+        if self.is_invincible:
+            self.invincibility_timer -= 1
+            
+            # Handle flashing effect
+            if self.invincibility_timer % self.flash_interval == 0:
+                self.visible = not self.visible
+                
+            # End invincibility when timer expires
+            if self.invincibility_timer <= 0:
+                self.is_invincible = False
+                self.visible = True  # Ensure visibility is restored
+
+    def make_invincible(self):
+        """Make Trogdor invincible for the set duration."""
+        self.is_invincible = True
+        self.invincibility_timer = self.invincibility_duration
+        self.visible = True  # Reset visibility state
+
+    def draw(self, screen):
+        # Draw Trogdor on the screen, changing color if in burnination mode
+        # Skip drawing if invisible during invincibility flashing
+        if not self.visible and self.is_invincible:
+            return
+            
+        color = ORANGE if self.burnination_mode else RED
+        pygame.draw.rect(screen, color, (self.x, self.y, self.size, self.size)) # Body
+        pygame.draw.circle(screen, WHITE, (self.x + 5, self.y + 7), 5) # Eyes
+        pygame.draw.circle(screen, WHITE, (self.x + 15, self.y + 7), 5)
+        pygame.draw.circle(screen, BLACK, (self.x + 5, self.y + 7), 2)
+        pygame.draw.circle(screen, BLACK, (self.x + 15, self.y + 7), 2)
 
 class Peasant:
     def __init__(self, house):

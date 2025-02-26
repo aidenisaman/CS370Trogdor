@@ -33,13 +33,13 @@ def update_projectiles(projectiles, trogdor, game_state, game_stats, spawn_time,
             projectiles.remove(projectile)
             continue
             
-        # Check for collision with Trogdor
-        if not is_invulnerable(game_stats['timeM'], spawn_time):
+        # Check for collision with Trogdor (using the new invincibility system)
+        if not trogdor.is_invincible:
             if check_projectile_collision(projectile, trogdor):
                 slash_noise.play()
                 game_state['lives'] -= 1
                 trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
-                new_spawn_time = game_stats['timeM']
+                trogdor.make_invincible()  # Make trogdor invincible after hit
                 projectiles.remove(projectile)
                 
                 if game_state['lives'] <= 0:
@@ -48,9 +48,9 @@ def update_projectiles(projectiles, trogdor, game_state, game_stats, spawn_time,
                         return False, spawn_time
                     else:
                         reset_game(game_state, game_stats)
-                        return True, 0
+                        return True, spawn_time
                         
-                return True, new_spawn_time
+                return True, spawn_time
                 
     return True, spawn_time
 

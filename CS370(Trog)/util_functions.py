@@ -163,14 +163,109 @@ def update_merlin_boss(boss, trogdor, projectiles, game_state, game_stats, spawn
     boss.update(trogdor, projectiles)
     game_completed = False
     
+    # Check for collisions between Trogdor and projectiles
+    for projectile in projectiles[:]:
+        if (abs(trogdor.x + trogdor.size/2 - projectile.x) < trogdor.size/2 + projectile.size and
+            abs(trogdor.y + trogdor.size/2 - projectile.y) < trogdor.size/2 + projectile.size):
+            if not trogdor.is_invincible:
+                slash_noise.play()
+                game_state['lives'] -= 1
+                trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                trogdor.make_invincible()  # Make trogdor invincible
+                projectiles.remove(projectile)
+                if game_state['lives'] <= 0:
+                    if handle_game_over(screen, game_state, game_stats, spawn_time, jump_time) == "exit":
+                        return None, spawn_time, True
+                    else:
+                        return create_boss(get_current_area(game_state['level']), game_state['level']), spawn_time, False
+            else:
+                projectiles.remove(projectile)
+    
     # Check for Trogdor hitting Merlin
-    if (abs(trogdor.x - boss.x) < trogdor.size + boss.size and
-        abs(trogdor.y - boss.y) < trogdor.size + boss.size):
-        boss.take_damage()
-        if boss.health <= 0:
-            game_state['level'] += 1
-            handle_level_advance(screen, trogdor, game_state, game_stats)
-            return create_boss(get_current_area(game_state['level']), game_state['level']), spawn_time, False
+    if not boss.invulnerable:
+        if (abs(trogdor.x - boss.x) < trogdor.size + boss.size and
+            abs(trogdor.y - boss.y) < trogdor.size + boss.size):
+            boss.take_damage()
+            if boss.health <= 0:
+                game_state['level'] += 1
+                handle_level_advance(screen, trogdor, game_state, game_stats)
+                return create_boss(get_current_area(game_state['level']), game_state['level']), spawn_time, False
+    
+    # Handle collisions with Merlin's mirror images (additional challenge in enhanced Merlin)
+    if hasattr(boss, 'mirror_images'):
+        for image in boss.mirror_images:
+            if not trogdor.is_invincible:
+                if (abs(trogdor.x - image['x']) < trogdor.size + boss.size and
+                    abs(trogdor.y - image['y']) < trogdor.size + boss.size):
+                    slash_noise.play()
+                    game_state['lives'] -= 1
+                    trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                    trogdor.make_invincible()  # Make trogdor invincible
+                    if game_state['lives'] <= 0:
+                        if handle_game_over(screen, game_state, game_stats, spawn_time, jump_time) == "exit":
+                            return None, spawn_time, True
+                        else:
+                            return create_boss(get_current_area(game_state['level']), game_state['level']), spawn_time, False
+    
+    # Handle collisions with arcane circles (another feature in enhanced Merlin)
+    if hasattr(boss, 'arcane_circles'):
+        for circle in boss.arcane_circles:
+            if not trogdor.is_invincible:
+                # Only cause damage if the player is inside an active circle
+                distance = math.sqrt((trogdor.x + trogdor.size/2 - circle['x'])**2 + 
+                               (trogdor.y + trogdor.size/2 - circle['y'])**2)
+                
+                if distance < circle['radius'] and circle['timer'] < 10:  # Damage in final moments
+                    slash_noise.play()
+                    game_state['lives'] -= 1
+                    trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                    trogdor.make_invincible()  # Make trogdor invincible
+                    if game_state['lives'] <= 0:
+                        if handle_game_over(screen, game_state, game_stats, spawn_time, jump_time) == "exit":
+                            return None, spawn_time, True
+                        else:
+                            return create_boss(get_current_area(game_state['level']), game_state['level']), spawn_time, False
+    
+    # Handle arcane wave collision (phase 3 attack)
+    if hasattr(boss, 'arcane_wave_active') and boss.arcane_wave_active:
+        if not trogdor.is_invincible:
+            # Calculate player position relative to Merlin
+            dx = trogdor.x + trogdor.size/2 - (boss.x + boss.size/2)
+            dy = trogdor.y + trogdor.size/2 - (boss.y + boss.size/2)
+            
+            # Calculate distance and angle to player
+            distance = math.sqrt(dx**2 + dy**2)
+            player_angle = math.atan2(dy, dx)
+            
+            # Normalize player angle to positive range
+            if player_angle < 0:
+                player_angle += 2 * math.pi
+                
+            # Calculate wave angle in positive range
+            wave_angle = boss.arcane_wave_angle % (2 * math.pi)
+            
+            # Check if player is in wave path
+            wave_width = math.pi / 4  # Width of wave arc
+            wave_radius = 200  # Radius of wave
+            
+            # Check if player is at the right distance for the wave
+            radius_match = abs(distance - wave_radius) < trogdor.size + 15
+            
+            # Check if player is within the wave angle
+            angle_diff = abs(player_angle - wave_angle)
+            angle_diff = min(angle_diff, 2 * math.pi - angle_diff)  # Handle wrapping
+            angle_match = angle_diff < wave_width / 2
+            
+            if radius_match and angle_match:
+                slash_noise.play()
+                game_state['lives'] -= 1
+                trogdor.x, trogdor.y = TROGDOR_INITIAL_X, TROGDOR_INITIAL_Y
+                trogdor.make_invincible()  # Make trogdor invincible
+                if game_state['lives'] <= 0:
+                    if handle_game_over(screen, game_state, game_stats, spawn_time, jump_time) == "exit":
+                        return None, spawn_time, True
+                    else:
+                        return create_boss(get_current_area(game_state['level']), game_state['level']), spawn_time, False
             
     return boss, spawn_time, game_completed
 

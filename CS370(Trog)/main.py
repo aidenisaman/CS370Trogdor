@@ -46,7 +46,7 @@ slash_noise.set_volume(.25)
 def game_loop(screen):
     # Initialize game state
     game_state = {
-        'level': 10,
+        'level': 15,
         'houses_crushed': 0,
         'lives': 300,
         'burnination_threshold': INITIAL_BURNINATION_THRESHOLD,

@@ -30,7 +30,7 @@ class PoisonTrail:
         color = (100, 200, 20, alpha)  # Greenish poison
         
         # Since Pygame's draw functions don't support alpha directly,
-        # we'll create a surface with alpha and blit it
+        # instead create a surface with alpha and blit it
         poison_surface = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
         pygame.draw.circle(poison_surface, color, (self.size//2, self.size//2), self.size//2)
         screen.blit(poison_surface, (self.x - self.size//2, self.y - self.size//2))

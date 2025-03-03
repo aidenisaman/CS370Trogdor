@@ -1,3 +1,27 @@
+"""
+Lancelot Class
+
+This file contains the implementation of the Lancelot class, which represents a boss character in the game. 
+Lancelot is a knight with various states and attacks, including charging, sweeping, and shield bashing. 
+The class handles Lancelot's behavior, state transitions, visual effects, and collision detection.
+
+Functions:
+- __init__: Initializes the Lancelot object with default attributes.
+- check_collision: Checks if Lancelot has collided with the player character, Trogdor.
+- update: Updates Lancelot's state and behavior based on the current game state and interactions with Trogdor.
+- _update_aiming: Handles the aiming state, where Lancelot prepares to charge or raise his shield.
+- _update_charging: Handles the charging state, where Lancelot charges towards Trogdor.
+- _update_vulnerable: Handles the vulnerable state, where Lancelot is temporarily vulnerable to attacks.
+- _update_sweeping: Handles the sweeping state, where Lancelot performs a sweeping attack.
+- _update_shielded: Handles the shielded state, where Lancelot raises his shield and charges at Trogdor.
+- _update_particles: Updates the visual particles for various effects like trails, charges, impacts, and sweeps.
+- start_charge: Initiates the charging state and sets the charge direction towards Trogdor.
+- take_damage: Reduces Lancelot's health if he is in a vulnerable state and handles phase-specific behavior on damage.
+- draw: Draws Lancelot and his visual effects on the screen.
+- _draw_particles: Draws the visual particles on the screen.
+- _draw_sweep_attack: Draws the sweeping attack visuals on the screen.
+- draw_health_bar: Draws Lancelot's health bar and state descriptions on the screen.
+"""
 import pygame
 import random
 import math

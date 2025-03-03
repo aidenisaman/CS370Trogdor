@@ -1,3 +1,35 @@
+"""
+Basilisk Boss Module
+
+This module defines the Basilisk boss and its associated helper classes for a game using Pygame.
+The Basilisk is a multi-phase boss with various attacks and behaviors.
+
+Classes:
+    PoisonTrail: Represents a trail of poison left by the Basilisk.
+        - __init__(x, y, size, duration): Initializes the poison trail.
+        - update(): Updates the poison trail's timer.
+        - draw(screen): Draws the poison trail on the screen.
+
+    ShedSkin: Represents the shed skin of the Basilisk.
+        - __init__(positions): Initializes the shed skin with segment positions.
+        - update(): Updates the shed skin's alpha value.
+        - draw(screen): Draws the shed skin on the screen.
+
+    Basilisk: Represents the Basilisk boss.
+        - __init__(): Initializes the Basilisk with its attributes and state.
+        - update(trogdor): Updates the Basilisk's state and behavior.
+        - _update_normal(trogdor): Handles the Basilisk's normal state behavior.
+        - _update_burrowing(): Handles the Basilisk's burrowing state behavior.
+        - _update_emerging(): Handles the Basilisk's emerging state behavior.
+        - _update_vulnerable(): Handles the Basilisk's vulnerable state behavior.
+        - _update_shedding(): Handles the Basilisk's shedding state behavior.
+        - _update_segments(): Updates the Basilisk's body segments.
+        - shed_skin(): Initiates the Basilisk's shedding behavior.
+        - take_damage(): Handles the Basilisk taking damage.
+        - draw(screen): Draws the Basilisk and its effects on the screen.
+        - draw_health_bar(screen): Draws the Basilisk's health bar on the screen.
+"""
+
 import pygame
 import random
 import math

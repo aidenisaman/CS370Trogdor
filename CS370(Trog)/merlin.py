@@ -1,3 +1,39 @@
+"""
+Merlin Class for Boss Fight
+
+This file contains the implementation of the Merlin class, which represents a boss character in a game. 
+Merlin has various states and attack patterns, including normal attacks, teleport sequences, arcane barrages, 
+and a fury mode. The class handles Merlin's behavior, visual effects, and interactions with the player character 
+(Trogdor) and projectiles.
+
+Functions:
+- __init__: Initializes Merlin's attributes, including position, health, states, and visual effects.
+- update: Updates Merlin's state, handles phase transitions, invulnerability, and attack patterns.
+- _update_particles: Updates the visual particles for teleportation and spells.
+- _update_normal: Handles the normal attack pattern, including basic projectile firing and special attack chances.
+- _update_channeling: Manages the channeling state, where Merlin charges a powerful spell.
+- _update_teleport_sequence: Executes the teleport sequence, moving Merlin to multiple destinations and firing projectiles.
+- _update_arcane_barrage: Controls the arcane barrage state, firing multiple projectiles at the player.
+- _update_fury: Manages the fury state, including rapid fire projectiles and an arcane wave attack.
+- enter_teleport_sequence: Initiates the teleport sequence state.
+- enter_arcane_barrage: Initiates the arcane barrage state.
+- enter_fury: Initiates the fury state.
+- enter_channeling: Initiates the channeling state.
+- fire_projectile: Fires a projectile towards the player.
+- take_damage: Handles damage taken by Merlin, including phase transitions and teleportation.
+- teleport: Teleports Merlin to a new position with visual effects.
+- _add_teleport_particles: Adds visual particles for teleportation effects.
+- _add_spell_particles: Adds visual particles for spell casting effects.
+- _create_mirror_image: Creates a mirror image of Merlin with its own behavior.
+- draw: Draws Merlin and all related visual effects on the screen.
+- _draw_wizard: Draws Merlin's wizard appearance, including robe, hat, and beard.
+- _draw_staff_effects: Draws Merlin's staff and its magical effects.
+- _draw_mirror_image: Draws a semi-transparent mirror image of Merlin.
+- _draw_channeling_aura: Draws the aura effect during the channeling state.
+- _draw_arcane_wave: Draws the arcane wave attack.
+- _draw_arcane_circle: Draws an arcane circle with runes and effects.
+- draw_health_bar: Draws Merlin's health bar and state information on the screen.
+"""
 import pygame
 import random
 import math

@@ -1,4 +1,5 @@
 """
+TODO: Update this docstring to describe the new enemies of the game.
 Defines the main game entities for Trogdor.
 
 Classes:

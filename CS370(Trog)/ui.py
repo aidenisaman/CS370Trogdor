@@ -80,16 +80,29 @@ def load_music(filename):
     
     return pygame.mixer_music.load(file_location)
 
-def play_music(SongNum):
-    pygame.mixer.music.stop() # Stops what ever is playing now
-    if SongNum == 1:
-        load_music('battle_music.wav') # Boss Battle Loop #3 by Sirkoto51 -- https://freesound.org/s/443128/ -- License: Attribution 4.0
-        pygame.mixer.music.set_volume(.2) # Set Volume 50%
-        pygame.mixer_music.play(-1) # Plays music on loop
-    elif SongNum == 0:
-        load_music('mainmenu_music.wav') # Castle Music Loop #1 by Sirkoto51 -- https://freesound.org/s/416632/ -- License: Attribution 4.0
-        pygame.mixer.music.set_volume(.2) # Set Volume 50%
-        pygame.mixer_music.play(-1) # Plays music on loop
+# Current state tracker for music
+current_music = None
+
+def play_music(song_num):
+    """Play music with the given song number."""
+    global current_music
+    
+    # If trying to play the same music that's already playing, do nothing
+    if song_num == current_music and pygame.mixer.music.get_busy():
+        return
+    
+    pygame.mixer.music.stop()  # Stops whatever is playing now
+    
+    if song_num == 1:
+        load_music('battle_music.wav')
+        pygame.mixer.music.set_volume(.2)  # Set Volume 20%
+        pygame.mixer_music.play(-1)  # Plays music on loop
+        current_music = 1
+    elif song_num == 0:
+        load_music('battle.wav')
+        pygame.mixer.music.set_volume(.2)  # Set Volume 20%
+        pygame.mixer_music.play(-1)  # Plays music on loop
+        current_music = 0
     return
 
 BACKGROUND_IMAGES = None

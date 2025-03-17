@@ -25,16 +25,20 @@ from util_functions import (initialize_game, update_boss, update_time,
                           handle_house_burnination, handle_peasant_collisions,
                           update_regular_enemies, get_collision_entities,
                           handle_game_over)
+from cutscenes import show_cutscene
 
 # Initialize Pygame
 pygame.init()
 pygame.mixer.init()
 
 # Set up the display
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption("Trogdor 2: Return of the Burninator")
 
 # Load sounds to be used
+victory_jingle = load_sound('victoryJingle.wav') # Victory sting 3 by Victor_Natas -- https://freesound.org/s/741975/ -- License: Attribution 4.0
+victory_noise = load_sound('victory.wav') # Victory Sound by pumodi -- https://freesound.org/people/pumodi/sounds/150223/ -- License: Creative Commons 0
+cutscene_music = load_sound('cutscene_music.wav') # Victory Success Win Sound Guitar Dry by luhninja -- https://freesound.org/s/747349/ -- License: Creative Commons 0
 bell_noise = load_sound('bell_noise.wav') # Old Church Bell (no noise) by igroglaz -- https://freesound.org/s/633208/ -- License: Creative Commons 0
 splat_noise = load_sound('splat.wav') # Splat and Crunch by FoolBoyMedia -- https://freesound.org/s/237924/ -- License: Attribution NonCommercial 4.0
 slash_noise = load_sound('slash.wav') # Slash - Rpg by colorsCrimsonTears -- https://freesound.org/s/580307/ -- License: Creative Commons 0
@@ -247,9 +251,17 @@ def main():
         choice = start_screen(screen)
         
         if choice == "start":
+            # Show intro cutscene when starting a new game
+            if not show_cutscene(screen, "intro"):
+                continue  # User quit during cutscene
+                
             play_music(0)
             game_completed, game_stats = game_loop(screen)
+            
             if game_completed:
+                # Show victory cutscene upon game completion
+                show_cutscene(screen, "victory")
+                
                 if leaderboard.check_if_highscore(game_stats):
                     name = get_player_name(screen)
                     if name:

@@ -18,8 +18,15 @@ from utils import (WIDTH, HEIGHT, UIBARHEIGHT, FPS, INITIAL_LIVES, TROGDOR_INITI
                   GREEN, YELLOW, PURPLE, RED, WHITE, BLACK,
                   GAME_AREA_OUTSKIRTS, GAME_AREA_TOWNS, GAME_AREA_WIZARDS, GAME_AREA_CASTLE,
                   BOSS_LEVELS, BUILDER_MAX_COUNT)
-from ui import game_over, show_congratulations_screen
+from ui import game_over, show_congratulations_screen, load_sound
 from powerups import select_power_up
+from cutscenes import show_cutscene
+
+def get_victory_sounds():
+    """Load and return victory sounds."""
+    victory_jingle = load_sound('victoryJingle.wav')
+    victory_noise = load_sound('victory.wav')
+    return victory_jingle, victory_noise
 
 def get_current_area(level):
     """Determine the current game area based on level."""
@@ -124,6 +131,19 @@ def update_basilisk_boss(boss, trogdor, game_state, game_stats, spawn_time, jump
     if math.sqrt((trogdor.x - boss.x)**2 + (trogdor.y - boss.y)**2) < trogdor.size/2 + boss.head_size/2:
         if boss.take_damage():
             if boss.health <= 0:
+                # Load and play victory sounds
+                victory_jingle, victory_noise = get_victory_sounds()
+                victory_jingle.play()
+                pygame.time.wait(3000)
+                victory_noise.play()
+                pygame.time.wait(1000)
+                pygame.event.clear()
+                
+                
+                # Show basilisk defeat cutscene
+                if not show_cutscene(screen, "basilisk"):
+                    return None, spawn_time, True  # User quit during cutscene
+                    
                 game_state['level'] += 1
                 handle_level_advance(screen, trogdor, game_state, game_stats)
                 return create_boss(get_current_area(game_state['level']), game_state['level']), spawn_time, False
@@ -140,6 +160,17 @@ def update_lancelot_boss(boss, trogdor, game_state, game_stats, spawn_time, jump
             abs(trogdor.y - boss.y) < trogdor.size + boss.size):
             boss.take_damage()
         if boss.health <= 0:
+            victory_jingle, victory_noise = get_victory_sounds()
+            victory_jingle.play()
+            pygame.time.wait(3000)
+            victory_noise.play()
+            pygame.time.wait(1000)
+            pygame.event.clear()
+            
+            # Show lancelot defeat cutscene
+            if not show_cutscene(screen, "lancelot"):
+                return None, spawn_time, True  # User quit during cutscene
+                
             game_state['level'] += 1
             handle_level_advance(screen, trogdor, game_state, game_stats)
             return create_boss(get_current_area(game_state['level']), game_state['level']), spawn_time, False
@@ -187,6 +218,19 @@ def update_merlin_boss(boss, trogdor, projectiles, game_state, game_stats, spawn
             abs(trogdor.y - boss.y) < trogdor.size + boss.size):
             boss.take_damage()
             if boss.health <= 0:
+                # Load and play victory sounds
+                victory_jingle, victory_noise = get_victory_sounds()
+                victory_jingle.play()
+                pygame.time.wait(3000)
+                victory_noise.play()
+                pygame.time.wait(1000)
+                pygame.event.clear()
+
+                
+                # Show merlin defeat cutscene
+                if not show_cutscene(screen, "merlin"):
+                    return None, spawn_time, True  # User quit during cutscene
+                    
                 game_state['level'] += 1
                 handle_level_advance(screen, trogdor, game_state, game_stats)
                 return create_boss(get_current_area(game_state['level']), game_state['level']), spawn_time, False
@@ -266,7 +310,7 @@ def update_merlin_boss(boss, trogdor, projectiles, game_state, game_stats, spawn
                         return None, spawn_time, True
                     else:
                         return create_boss(get_current_area(game_state['level']), game_state['level']), spawn_time, False
-            
+                    
     return boss, spawn_time, game_completed
 
 def update_dragonking_boss(boss, trogdor, game_state, game_stats, spawn_time, jump_time, slash_noise, screen):
@@ -277,6 +321,7 @@ def update_dragonking_boss(boss, trogdor, game_state, game_stats, spawn_time, ju
     if boss.should_die():
         game_state['level'] += 1
         if game_state['level'] > 20:  # Game complete at level 20
+            # Victory sounds and cutscene will be shown in main() after game_loop returns
             show_congratulations_screen(screen)
             game_completed = True
             return None, spawn_time, game_completed

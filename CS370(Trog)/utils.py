@@ -22,7 +22,7 @@ PURPLE = (150, 0, 255)
 CYAN = (0, 255, 255)  # Color for Builder
 
 # Game Settings
-WIDTH, HEIGHT = 1024, 768
+WIDTH, HEIGHT = 800, 600
 UIBARHEIGHT = 50  # Increased from 40
 FPS = 60
 
